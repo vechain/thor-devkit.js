@@ -1,5 +1,5 @@
 import { blake2b256, publicKeyToAddress, secp256k1 } from './crypto'
-import { rlp } from './rlp'
+import * as rlp from './rlp'
 
 /** Transaction class defines VeChainThor's multi-clause transaction */
 export class Transaction {

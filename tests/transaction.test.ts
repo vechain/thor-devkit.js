@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { Transaction, secp256k1, publicKeyToAddress } from '../src'
+import { Transaction, cry} from '../src'
 
 describe("transaction", () => {
     let body: Transaction.Body = {
@@ -65,8 +65,8 @@ describe("transaction", () => {
 
     let signed = new Transaction(body)
     let privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
-    signed.signature = secp256k1.sign(signed.signingHash, privKey)
-    let signer = publicKeyToAddress(secp256k1.derivePublicKey(privKey))
+    signed.signature = cry.secp256k1.sign(signed.signingHash, privKey)
+    let signer = cry.publicKeyToAddress(cry.secp256k1.derivePublicKey(privKey))
 
     it("signed", () => {
         expect(signed.signature!.toString('hex')).equal('f76f3c91a834165872aa9464fc55b03a13f46ea8d3b858e528fcceaf371ad6884193c3f313ff8effbb57fe4d1adc13dceb933bedbf9dbb528d2936203d5511df00')
