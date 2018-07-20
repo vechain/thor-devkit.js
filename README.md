@@ -1,4 +1,4 @@
-# Thor Dev Kit
+# Thor DevKit
 
 Typescript library to aid DApp development on VeChain Thor
 
@@ -7,8 +7,6 @@ Typescript library to aid DApp development on VeChain Thor
 [![NPM Version](https://badge.fury.io/js/thor-devkit.svg)](https://www.npmjs.com/package/thor-devkit)
 [![Build Status](https://travis-ci.org/vechain/thor-devkit.js.svg)](https://travis-ci.org/vechain/thor-devkit.js)
 [![Coverage Status](https://coveralls.io/repos/github/vechain/thor-devkit.js/badge.svg?branch=master)](https://coveralls.io/github/vechain/thor-devkit.js?branch=master)
-
-
 
 ## Installation
 
@@ -24,7 +22,7 @@ import all components or some of them
 import {
     cry,
     abi,
-    rlp,
+    RLP,
     Transaction
 } from 'thor-devkit'
 ```
@@ -34,6 +32,7 @@ import {
 they are under `cry` namespace
 
 #### Hashing
+
 ```javascript
 let hash = cry.blake2b256('hello world')
 console.log(hash.toString('hex'))
@@ -45,6 +44,7 @@ console.log(hash.toString('hex'))
 ```
 
 #### Secp256k1
+
 ```javascript
 let privKey = cry.secp256k1.generatePrivateKey()
 let pubKey = cry.secp256k1.derivePublicKey(privKey)
@@ -79,13 +79,13 @@ ok = cry.Keystore.wellFormed(keystore)
 ### RLP
 
 ```javascript
-// define the profile for clause structure
-let profile: rlp.Profile = {
+// define the profile for tx clause structure
+let profile: RLP.Profile = {
     name: 'clause',
     kind: [
-        { name: 'to', kind: new rlp.NullableBlobKind(20) },
-        { name: 'value', kind: new rlp.NumericKind(32) },
-        { name: 'data', kind: new rlp.VariableBlobKind() }
+        { name: 'to', kind: new RLP.NullableBlobKind(20) },
+        { name: 'value', kind: new RLP.NumericKind(32) },
+        { name: 'data', kind: new RLP.VariableBlobKind() }
     ]
 }
 
@@ -95,11 +95,13 @@ let clause = {
     data: '0x'
 }
 
-let data = rlp.encode(clause, profile)
+let rlp = new RLP(profile)
+
+let data = rlp.encode(clause)
 console.log(data.toString('hex'))
 // d7947567d83b7b8d80addcb281a71d54fc7b3364ffed0a80
 
-let obj = rlp.decode(data, profile)
+let obj = rlp.decode(data)
 // `obj` should be identical to `clause`
 ```
 
@@ -129,10 +131,45 @@ let body: Transaction.Body = {
 }
 
 let tx = new Transaction(body)
-tx.signature = cry.secp256k1.sign(tx.signingHash, /* your private key */)
+let signingHash = cry.blake2b256(tx.encode())
+tx.signature = cry.secp256k1.sign(signingHash, /* your private key */)
 
 let raw = tx.encode()
 let decoded = Transaction.decode(raw)
+```
+
+### ABI
+
+```javascript
+let fn = new abi.Function({
+    "constant": false,
+    "inputs": [
+        {
+            "name": "a1",
+            "type": "uint256"
+        },
+        {
+            "name": "a2",
+            "type": "string"
+        }
+    ],
+    "name": "f1",
+    "outputs": [
+        {
+            "name": "r1",
+            "type": "address"
+        },
+        {
+            "name": "r2",
+            "type": "bytes"
+        }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+})
+
+let data = fn.encode(1, 'foo')
 ```
 
 ## License

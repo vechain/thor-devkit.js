@@ -1,11 +1,12 @@
 {
   "name": "thor-devkit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Typescript library to aid DApp development on VeChain Thor",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p .",
+    "lint": "tslint -p .",
     "prepare": "rm -rf dist/; npm run build",
     "test": "NODE_ENV=test mocha --require ts-node/register --timeout 20000 --recursive  './**/*.test.ts'",
     "cover": "NODE_ENV=test nyc npm t",
@@ -65,6 +66,7 @@
     "mocha": "^5.2.0",
     "nyc": "^12.0.2",
     "ts-node": "^6.1.0",
+    "tslint": "^5.11.0",
     "typescript": "^2.9.1"
   },
   "dependencies": {
