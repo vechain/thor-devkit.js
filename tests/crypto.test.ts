@@ -1,6 +1,11 @@
 import { expect } from 'chai'
 import { cry } from '../src'
 
+// tslint:disable:quotemark
+// tslint:disable:object-literal-key-quotes
+// tslint:disable:max-line-length
+// tslint:disable:trailing-comma
+
 describe('hash', () => {
     it('blake2b256', () => {
         expect(cry.blake2b256(Buffer.alloc(0)).toString('hex')).equal('0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8')
@@ -16,11 +21,11 @@ describe('hash', () => {
 })
 
 describe('secp256k1', () => {
-    let privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
-    let pubKey = Buffer.from('04b90e9bb2617387eba4502c730de65a33878ef384a46f1096d86f2da19043304afa67d0ad09cf2bea0c6f2d1767a9e62a7a7ecc41facf18f2fa505d92243a658f', 'hex')
-    let addr = '0xd989829d88b0ed1b06edf5c50174ecfa64f14a64'
-    let msgHash = cry.keccak256('hello world')
-    let sig = Buffer.from('f8fe82c74f9e1f5bf443f8a7f8eb968140f554968fdcab0a6ffe904e451c8b9244be44bccb1feb34dd20d9d8943f8c131227e55861736907b02d32c06b934d7200', 'hex')
+    const privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
+    const pubKey = Buffer.from('04b90e9bb2617387eba4502c730de65a33878ef384a46f1096d86f2da19043304afa67d0ad09cf2bea0c6f2d1767a9e62a7a7ecc41facf18f2fa505d92243a658f', 'hex')
+    const addr = '0xd989829d88b0ed1b06edf5c50174ecfa64f14a64'
+    const msgHash = cry.keccak256('hello world')
+    const sig = Buffer.from('f8fe82c74f9e1f5bf443f8a7f8eb968140f554968fdcab0a6ffe904e451c8b9244be44bccb1feb34dd20d9d8943f8c131227e55861736907b02d32c06b934d7200', 'hex')
 
     it('derive', () => {
         expect(cry.secp256k1.derivePublicKey(privKey)).deep.equal(pubKey)
@@ -32,33 +37,32 @@ describe('secp256k1', () => {
     })
 })
 
-
 describe('keystore', () => {
-    let privKey = cry.secp256k1.generatePrivateKey()
+    const privKey = cry.secp256k1.generatePrivateKey()
 
     it('encrypt', async () => {
-        let ks = await cry.Keystore.encrypt(privKey, '123')
+        const ks = await cry.Keystore.encrypt(privKey, '123')
         expect(ks.version).equal(3)
         expect(ks.address).equal(cry.publicKeyToAddress(cry.secp256k1.derivePublicKey(privKey)).toString('hex'))
     })
 
     it('decrypt', async () => {
-        let ks = await cry.Keystore.encrypt(privKey, '123')
-        let dprivKey = await cry.Keystore.decrypt(ks, '123')
+        const ks = await cry.Keystore.encrypt(privKey, '123')
+        const dprivKey = await cry.Keystore.decrypt(ks, '123')
         expect(dprivKey).deep.equal(privKey)
 
         let fail
         try {
             await cry.Keystore.decrypt(ks, 'wrong pass')
             fail = false
-        } catch{
+        } catch {
             fail = true
         }
         expect(fail).equal(true)
     })
 
     it('validate', async () => {
-        let ks = await cry.Keystore.encrypt(privKey, '123')
+        const ks = await cry.Keystore.encrypt(privKey, '123')
         expect(cry.Keystore.wellFormed(ks)).equal(true)
 
         let cpy = { ...ks, version: 0 }
@@ -84,8 +88,7 @@ describe('mnemonic', () => {
         expect(cry.mnemonic.validate(cry.mnemonic.generate())).equal(true)
     })
     it('derive', () => {
-        let words = 'ignore empty bird silly journey junior ripple have guard waste between tenant'.split(' ')
+        const words = 'ignore empty bird silly journey junior ripple have guard waste between tenant'.split(' ')
         expect(cry.mnemonic.derivePrivateKey(words).toString('hex')).equal('27196338e7d0b5e7bf1be1c0327c53a244a18ef0b102976980e341500f492425')
     })
 })
-

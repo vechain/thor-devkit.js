@@ -1,18 +1,19 @@
 import { expect } from 'chai'
 import { abi } from '../src'
 
+// tslint:disable:quotemark
+// tslint:disable:object-literal-key-quotes
+// tslint:disable:max-line-length
+// tslint:disable:trailing-comma
 
 describe('abi', () => {
 
     // contract Foo {
     //     function f1(uint a1, string a2) public returns(address r1, bytes r2);
     //     event E1(uint indexed a1, string a2);
-    //     event E2(uint indexed a1, string a2) anonymous; 
+    //     event E2(uint indexed a1, string a2) anonymous;
     // }
-
-
-
-    let f1 = new abi.Function({
+    const f1 = new abi.Function({
         "constant": false,
         "inputs": [
             {
@@ -40,7 +41,7 @@ describe('abi', () => {
         "type": "function"
     })
 
-    let e1 = new abi.Event({
+    const e1 = new abi.Event({
         "anonymous": false,
         "inputs": [
             {
@@ -58,7 +59,7 @@ describe('abi', () => {
         "type": "event"
     })
 
-    let e2 = new abi.Event({
+    const e2 = new abi.Event({
         "anonymous": true,
         "inputs": [
             {

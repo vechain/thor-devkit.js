@@ -1,48 +1,70 @@
 import { blake2b256, publicKeyToAddress, secp256k1 } from './crypto'
-import * as rlp from './rlp'
+import { RLP } from './rlp'
 
 /** Transaction class defines VeChainThor's multi-clause transaction */
 export class Transaction {
-    readonly body: Transaction.Body
+    /** decode from Buffer to transaction */
+    public static decode(raw: Buffer) {
+        try {
+            const body = unsignedTxRLP.decode(raw)
+            return new Transaction(body)
+        } catch {
+            const body = txRLP.decode(raw)
+            const sig = body.signature as string
+            delete body.signature
+
+            const tx = new Transaction(body)
+            tx.signature = Buffer.from(sig.slice(2), 'hex')
+            return tx
+        }
+    }
+
+    public readonly body: Transaction.Body
 
     /** signature to transaction */
-    signature?: Buffer
+    public signature?: Buffer
 
     /**
      * construct a transaction object with given body
-     * @param body 
+     * @param body body of tx
      */
     constructor(body: Transaction.Body) {
         this.body = { ...body, reserved: body.reserved || [] }
     }
 
-    /** returns hash for signing */
-    get signingHash() {
-        let data = rlp.encode({ ...this.body, reserved: [] }, { name: '', kind: fields })
-        return blake2b256(data)
-    }
-
     /**
      * returns transaction ID
-     * zero ID returned if something wrong (e.g. invalid signature)
+     * null returned if something wrong (e.g. invalid signature)
      */
     get id() {
+        if (!this.signature) {
+            return null
+        }
         try {
-            let pubKey = secp256k1.recover(this.signingHash, this.signature!)
-            let signer = publicKeyToAddress(pubKey)
+            const signingHash = blake2b256(unsignedTxRLP.encode(this.body))
+            const pubKey = secp256k1.recover(signingHash, this.signature)
+            const signer = publicKeyToAddress(pubKey)
             return '0x' + blake2b256(
-                this.signingHash,
+                signingHash,
                 signer,
             ).toString('hex')
-        } catch{
-            return '0x0000000000000000000000000000000000000000000000000000000000000000'
+        } catch {
+            return null
         }
     }
 
-    /** returns signer */
+    /** returns signer. null returned if no signature or not incorrectly signed */
     get signer() {
-        let pubKey = secp256k1.recover(this.signingHash, this.signature!)
-        return '0x' + publicKeyToAddress(pubKey).toString('hex')
+        if (!this.signature) {
+            return null
+        }
+        try {
+            const signingHash = blake2b256(unsignedTxRLP.encode(this.body))
+            const pubKey = secp256k1.recover(signingHash, this.signature)
+            return '0x' + publicKeyToAddress(pubKey).toString('hex')
+        } catch {
+            return null
+        }
     }
 
     /** returns intrinsic gas it takes */
@@ -51,35 +73,19 @@ export class Transaction {
     }
 
     /** encode into Buffer */
-    encode() {
+    public encode() {
         if (this.signature) {
-            let sigHex = '0x' + this.signature.toString('hex')
-            return rlp.encode({ ...this.body, signature: sigHex }, { name: '', kind: fieldsWithSig })
+            const sigHex = '0x' + this.signature.toString('hex')
+            return txRLP.encode({ ...this.body, signature: sigHex })
         }
-        return rlp.encode(this.body, { name: '', kind: fields })
-    }
-
-    /** decode from Buffer to transaction */
-    static decode(raw: Buffer) {
-        try {
-            let body = rlp.decode(raw, { name: '', kind: fields })
-            return new Transaction(body)
-        } catch{
-            let body = rlp.decode(raw, { name: '', kind: fieldsWithSig })
-            let sig = body.signature as string
-            delete body['signature']
-            let tx = new Transaction(body)
-
-            tx.signature = Buffer.from(sig.slice(2), 'hex')
-            return tx
-        }
+        return unsignedTxRLP.encode(this.body)
     }
 }
 
 export namespace Transaction {
     /** clause type */
-    export type Clause = {
-        /** 
+    export interface Clause {
+        /**
          * destination address where transfer token to, or invoke contract method on.
          * set null destination to deploy a contract.
          */
@@ -90,10 +96,10 @@ export namespace Transaction {
 
         /** input data for contract method invocation or deployment */
         data: string
-    }   
+    }
 
     /** body type */
-    export type Body = {
+    export interface Body {
         /** last byte of genesis block ID */
         chainTag: number
         /** 8 bytes prefix of some block's ID */
@@ -116,21 +122,23 @@ export namespace Transaction {
 
     /**
      * calculates intrinsic gas that a tx costs with the given clauses.
-     * @param clauses 
+     * @param clauses
      */
     export function intrinsicGas(clauses: Clause[]) {
         const txGas = 5000
         const clauseGas = 16000
         const clauseGasContractCreation = 48000
 
-        if (clauses.length === 0)
+        if (clauses.length === 0) {
             return txGas + clauseGas
+        }
 
         return clauses.reduce((sum, c) => {
-            if (c.to)
+            if (c.to) {
                 sum += clauseGas
-            else
+            } else {
                 sum += clauseGasContractCreation
+            }
             sum += dataGas(c.data)
             return sum
         }, txGas)
@@ -142,36 +150,40 @@ export namespace Transaction {
 
         let sum = 0
         for (let i = 2; i < data.length; i += 2) {
-            if (data.substr(i, 2) === '00')
+            if (data.substr(i, 2) === '00') {
                 sum += zgas
-            else
+            } else {
                 sum += nzgas
+            }
         }
         return sum
     }
 }
 
-const fields: rlp.Profile[] = [
-    { name: 'chainTag', kind: new rlp.NumericKind(1) },
-    { name: 'blockRef', kind: new rlp.TrimmedBlobKind(8) },
-    { name: 'expiration', kind: new rlp.NumericKind(4) },
-    {
-        name: 'clauses', kind: {
-            item: [
-                { name: 'to', kind: new rlp.NullableBlobKind(20) },
-                { name: 'value', kind: new rlp.NumericKind(32) },
-                { name: 'data', kind: new rlp.VariableBlobKind() },
-            ]
-        }
-    },
-    { name: 'gasPriceCoef', kind: new rlp.NumericKind(1) },
-    { name: 'gas', kind: new rlp.NumericKind(8) },
-    { name: 'dependsOn', kind: new rlp.NullableBlobKind(32) },
-    { name: 'nonce', kind: new rlp.NumericKind(8) },
-    { name: 'reserved', kind: new rlp.RawKind() }
-]
+const unsignedTxRLP = new RLP({
+    name: 'tx',
+    kind: [
+        { name: 'chainTag', kind: new RLP.NumericKind(1) },
+        { name: 'blockRef', kind: new RLP.TrimmedBlobKind(8) },
+        { name: 'expiration', kind: new RLP.NumericKind(4) },
+        {
+            name: 'clauses', kind: {
+                item: [
+                    { name: 'to', kind: new RLP.NullableBlobKind(20) },
+                    { name: 'value', kind: new RLP.NumericKind(32) },
+                    { name: 'data', kind: new RLP.VariableBlobKind() },
+                ],
+            },
+        },
+        { name: 'gasPriceCoef', kind: new RLP.NumericKind(1) },
+        { name: 'gas', kind: new RLP.NumericKind(8) },
+        { name: 'dependsOn', kind: new RLP.NullableBlobKind(32) },
+        { name: 'nonce', kind: new RLP.NumericKind(8) },
+        { name: 'reserved', kind: new RLP.RawKind() },
+    ],
+})
 
-const fieldsWithSig = [
-    ...fields,
-    { name: 'signature', kind: new rlp.VariableBlobKind() }
-]
+const txRLP = new RLP({
+    name: 'tx',
+    kind: [...(unsignedTxRLP.profile.kind as RLP.Profile[]), { name: 'signature', kind: new RLP.VariableBlobKind() }],
+})

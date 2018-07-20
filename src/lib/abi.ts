@@ -6,7 +6,7 @@ export namespace abi {
     export class Function {
         /**
          * create a function object
-         * @param definition 
+         * @param definition abi definition of the function
          */
         constructor(public readonly definition: Function.Definition) { }
 
@@ -17,17 +17,17 @@ export namespace abi {
 
         /**
          * encode input parameters into call data
-         * @param parameters 
+         * @param args arguments for the function
          */
-        encode(...parameters: (string | number | boolean | Buffer)[]): string {
-            return ethABI.encodeFunctionCall(this.definition, parameters)
+        public encode(...args: Array<string | number | boolean | Buffer>): string {
+            return ethABI.encodeFunctionCall(this.definition, args)
         }
 
         /**
          * decode output data
-         * @param outputData 
+         * @param outputData output data to decode
          */
-        decode(outputData: string) {
+        public decode(outputData: string) {
             return ethABI.decodeParameters(this.definition.outputs || [], outputData) as object
         }
     }
@@ -35,12 +35,12 @@ export namespace abi {
     export namespace Function {
         export type Type = 'function' | 'constructor' | 'fallback'
         export type StateMutability = 'pure' | 'view' | 'constant' | 'payable' | 'nonpayable'
-        export type Parameter = {
+        export interface Parameter {
             name: string
             type: string
         }
 
-        export type Definition = {
+        export interface Definition {
             type?: Type
             name?: string
             constant?: boolean
@@ -63,22 +63,25 @@ export namespace abi {
 
         /**
          * decode event log
-         * @param data 
-         * @param topics 
+         * @param data data in event output
+         * @param topics topics in event
          */
-        decode(data: string, topics: string[]) {
-            return ethABI.decodeLog(this.definition.inputs, data, this.definition.anonymous ? topics: topics.slice(1)) as object
+        public decode(data: string, topics: string[]) {
+            return ethABI.decodeLog(
+                this.definition.inputs,
+                data,
+                this.definition.anonymous ? topics : topics.slice(1)) as object
         }
     }
 
     export namespace Event {
-        export type Parameter = {
+        export interface Parameter {
             name: string
             type: string
             indexed: boolean
         }
 
-        export type Definition = {
+        export interface Definition {
             type: 'event'
             name: string
             anonymous?: boolean

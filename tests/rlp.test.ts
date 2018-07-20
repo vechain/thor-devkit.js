@@ -1,15 +1,19 @@
 import { expect } from 'chai'
-import { rlp } from '../src'
+import { RLP } from '../src'
+// tslint:disable:quotemark
+// tslint:disable:object-literal-key-quotes
+// tslint:disable:max-line-length
+// tslint:disable:trailing-comma
 
 describe('rlp', () => {
     it('rawKind', () => {
-        let kind = new rlp.RawKind()
+        const kind = new RLP.RawKind()
         expect(kind.encode('foo', '')).equal('foo')
         expect(kind.decode('bar', '')).equal('bar')
     })
 
     it('numericKind encode', () => {
-        let kind = new rlp.NumericKind(8)
+        const kind = new RLP.NumericKind(8)
 
         expect(kind.encode('0x0', '').toString('hex')).equal('')
         expect(kind.encode('0x123', '').toString('hex')).equal('0123')
@@ -20,11 +24,11 @@ describe('rlp', () => {
         expect(() => { kind.encode({} as any, '') }).to.throw()
         expect(() => { kind.encode('0x', '') }).to.throw()
         expect(() => { kind.encode(-1, '') }).to.throw()
-        expect(() => { kind.encode('0x12345678123456780', ''), 'exceeds max bytes' }, 'exceed max bytes').to.throw()
-        expect(() => { kind.encode(2 ** 64, ''), 'unsafe integer' }, 'exceed max bytes').to.throw()
+        expect(() => { kind.encode('0x12345678123456780', '') }, 'exceed max bytes').to.throw()
+        expect(() => { kind.encode(2 ** 64, '') }, 'unsafe integer').to.throw()
     })
     it('numericKind decode', () => {
-        let kind = new rlp.NumericKind(8)
+        const kind = new RLP.NumericKind(8)
         expect(kind.decode(Buffer.from([1, 2, 3]), '')).equal(0x010203)
         expect(kind.decode(Buffer.from([1, 2, 3, 4, 5, 6, 7, 8]), '')).equal('0x102030405060708')
 
@@ -33,7 +37,7 @@ describe('rlp', () => {
     })
 
     it('blobKind encode', () => {
-        let kind = new rlp.BlobKind(4)
+        const kind = new RLP.BlobKind(4)
         expect(kind.encode('0x12345678', '').toString('hex')).equal('12345678')
 
         expect(() => { kind.encode('0x1234567z', '') }).to.throw()
@@ -45,7 +49,7 @@ describe('rlp', () => {
     })
 
     it('blobKind decode', () => {
-        let kind = new rlp.BlobKind(4)
+        const kind = new RLP.BlobKind(4)
         expect(kind.decode(Buffer.from([1, 2, 3, 4]), '')).equal('0x01020304')
 
         expect(() => { kind.decode(Buffer.alloc(2), '') }).to.throw()
@@ -53,7 +57,7 @@ describe('rlp', () => {
     })
 
     it('nullableBlobKind encode', () => {
-        let kind = new rlp.NullableBlobKind(4)
+        const kind = new RLP.NullableBlobKind(4)
         expect(kind.encode(null, '').toString('hex')).equal('')
         expect(kind.encode('0x12345678', '').toString('hex')).equal('12345678')
 
@@ -67,7 +71,7 @@ describe('rlp', () => {
     })
 
     it('nullableBlobKind decode', () => {
-        let kind = new rlp.NullableBlobKind(4)
+        const kind = new RLP.NullableBlobKind(4)
         expect(kind.decode(Buffer.alloc(0), '')).equal(null)
         expect(kind.decode(Buffer.from([1, 2, 3, 4]), '')).equal('0x01020304')
 
@@ -75,18 +79,17 @@ describe('rlp', () => {
     })
 
     it('trimmedBlobKind encode', () => {
-        let kind = new rlp.TrimmedBlobKind(4)
+        const kind = new RLP.TrimmedBlobKind(4)
         expect(kind.encode('0x00112233', '').toString('hex')).equal('112233')
     })
 
     it('trimmedBlobKind decode', () => {
-        let kind = new rlp.TrimmedBlobKind(4)
+        const kind = new RLP.TrimmedBlobKind(4)
         expect(kind.decode(Buffer.from([1]), '')).equal('0x00000001')
     })
 
-
     it('variableBlobKind encode', () => {
-        let kind = new rlp.VariableBlobKind()
+        let kind = new RLP.VariableBlobKind()
         expect(kind.encode('0x1234567890', '').toString('hex'))
             .equal('1234567890')
 
@@ -94,37 +97,35 @@ describe('rlp', () => {
         expect(() => { kind.encode('0xxy', '') }).to.throw()
         expect(() => { kind.encode(1 as any, '') }).to.throw()
 
-        kind = new rlp.VariableBlobKind(4)
+        kind = new RLP.VariableBlobKind(4)
         expect(() => { kind.encode('0x1234567890', '') }, 'exceeds max bytes').to.throw()
     })
 
     it('variableBlobKind decode', () => {
-        let kind = new rlp.VariableBlobKind()
+        let kind = new RLP.VariableBlobKind()
         expect(kind.decode(Buffer.from([1, 2, 3, 4, 5]), '')).equal('0x0102030405')
 
-
-        kind = new rlp.VariableBlobKind(4)
+        kind = new RLP.VariableBlobKind(4)
         expect(() => { kind.decode(Buffer.from([1, 2, 3, 4, 5]), '') }, 'exceeds max bytes').to.throw()
     })
 
-
-    let profile: rlp.Profile = {
+    const profile: RLP.Profile = {
         name: '',
         kind: [
-            { name: 'foo', kind: new rlp.NumericKind() },
-            { name: 'bar', kind: new rlp.BlobKind(4) },
+            { name: 'foo', kind: new RLP.NumericKind() },
+            { name: 'bar', kind: new RLP.BlobKind(4) },
             {
                 name: 'baz', kind: {
                     item: [
-                        { name: 'x', kind: new rlp.VariableBlobKind() },
-                        { name: 'y', kind: new rlp.NumericKind() },
+                        { name: 'x', kind: new RLP.VariableBlobKind() },
+                        { name: 'y', kind: new RLP.NumericKind() },
                     ]
                 }
             }
         ]
     }
 
-    let data = {
+    const data = {
         foo: 123,
         bar: '0x12345678',
         baz: [
@@ -134,12 +135,12 @@ describe('rlp', () => {
     }
 
     it('encode', () => {
-        let buf = rlp.encode(data, profile)
+        const buf = new RLP(profile).encode(data)
         expect(buf.toString('hex')).equal('d17b8412345678cac4118204d2c41282162e')
     })
 
     it('decode', () => {
-        let dec = rlp.decode(Buffer.from('d17b8412345678cac4118204d2c41282162e', 'hex'), profile)
+        const dec = new RLP(profile).decode(Buffer.from('d17b8412345678cac4118204d2c41282162e', 'hex'))
         expect(dec).deep.equal(data)
     })
 })

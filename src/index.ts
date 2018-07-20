@@ -1,6 +1,6 @@
 export * from './lib/abi'
 export * from './lib/transaction'
+export * from './lib/rlp'
 
 import * as cry from './lib/crypto'
-import * as rlp from './lib/rlp'
-export { cry, rlp}
+export { cry }

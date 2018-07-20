@@ -6,13 +6,14 @@ const blake = require('blakejs')
  * computes blake2b 256bit hash of given data
  * @param data one or more Buffer | string
  */
-export function blake2b256(...data: (Buffer | string)[]) {
-    let ctx = blake.blake2bInit(32, null)
+export function blake2b256(...data: Array<Buffer | string>) {
+    const ctx = blake.blake2bInit(32, null)
     data.forEach(d => {
-        if (Buffer.isBuffer(d))
+        if (Buffer.isBuffer(d)) {
             blake.blake2bUpdate(ctx, d)
-        else
+        } else {
             blake.blake2bUpdate(ctx, Buffer.from(d, 'utf8'))
+        }
     })
     return Buffer.from(blake.blake2bFinal(ctx))
 }
@@ -21,17 +22,17 @@ export function blake2b256(...data: (Buffer | string)[]) {
  * computes keccak256 hash of given data
  * @param data one or more Buffer | string
  */
-export function keccak256(...data: (Buffer | string)[]) {
-    let h = keccak('keccak256')
+export function keccak256(...data: Array<Buffer | string>) {
+    const h = keccak('keccak256')
     data.forEach(d => {
-        if (Buffer.isBuffer(d))
+        if (Buffer.isBuffer(d)) {
             h.update(d)
-        else
+        } else {
             h.update(Buffer.from(d, 'utf8'))
+        }
     })
     return h.digest() as Buffer
 }
-
 
 /**
  * derive Address from public key
@@ -43,12 +44,12 @@ export function publicKeyToAddress(pubKey: Buffer) {
 
 /** secp256k1 methods set */
 export namespace secp256k1 {
-    const secp256k1 = require('secp256k1')
+    const secp256k1Funs = require('secp256k1')
     /** generate private key  */
     export function generatePrivateKey() {
         for (; ;) {
-            let privKey = randomBytes(32)
-            if (secp256k1.privateKeyVerify(privKey)) {
+            const privKey = randomBytes(32)
+            if (secp256k1Funs.privateKeyVerify(privKey)) {
                 return privKey
             }
         }
@@ -59,7 +60,7 @@ export namespace secp256k1 {
      * @param privKey the private key
      */
     export function derivePublicKey(privKey: Buffer) {
-        return secp256k1.publicKeyCreate(privKey, false /* uncompressed */) as Buffer
+        return secp256k1Funs.publicKeyCreate(privKey, false /* uncompressed */) as Buffer
     }
 
     /**
@@ -68,8 +69,8 @@ export namespace secp256k1 {
      * @param privKey serialized private key
      */
     export function sign(msgHash: Buffer, privKey: Buffer) {
-        let sig = secp256k1.sign(msgHash, privKey)
-        let packed = Buffer.alloc(65)
+        const sig = secp256k1Funs.sign(msgHash, privKey)
+        const packed = Buffer.alloc(65)
         sig.signature.copy(packed)
         packed[64] = sig.recovery
         return packed
@@ -81,21 +82,22 @@ export namespace secp256k1 {
      * @param sig signature
      */
     export function recover(msgHash: Buffer, sig: Buffer) {
-        if (sig.length != 65)
+        if (sig.length !== 65) {
             throw new Error('invalid signature')
-        let recovery = sig[64]
-        if (recovery !== 0 && recovery !== 1)
+        }
+        const recovery = sig[64]
+        if (recovery !== 0 && recovery !== 1) {
             throw new Error('invalid signature recovery')
+        }
 
-        return secp256k1.recover(msgHash, sig.slice(0, 64), recovery, false) as Buffer
+        return secp256k1Funs.recover(msgHash, sig.slice(0, 64), recovery, false) as Buffer
     }
 }
-
 
 const Keythereum = require('keythereum')
 
 /** to present encrypted private key in Ethereum keystore format. */
-export type Keystore = {
+export interface Keystore {
     address: string
     crypto: object
     id: string
@@ -106,20 +108,20 @@ export namespace Keystore {
     /**
      * encrypt private key to keystore with given password
      * @param privateKey the private key to be encrypted
-     * @param password 
+     * @param password password to encrypt the private key
      */
     export function encrypt(privateKey: Buffer, password: string) {
         return new Promise<Keystore>(resolve => {
             Keythereum.dump(password, privateKey, randomBytes(32), randomBytes(16), {
-                kdf: "scrypt",
-                cipher: "aes-128-ctr",
+                cipher: 'aes-128-ctr',
+                kdf: 'scrypt',
                 kdfparams: {
-                    memory: 280000000,
                     dklen: 32,
+                    memory: 280000000,
                     n: 262144,
+                    p: 1,
                     r: 8,
-                    p: 1
-                }
+                },
             }, resolve)
         })
     }
@@ -127,7 +129,7 @@ export namespace Keystore {
     /**
      * decrypt private key from keystore
      * @param ks the keystore
-     * @param password 
+     * @param password password to decrypt keystore
      */
     export function decrypt(ks: Keystore, password: string) {
         return new Promise<Buffer>((resolve, reject) => {
@@ -145,14 +147,18 @@ export namespace Keystore {
      * @param ks the keystore
      */
     export function wellFormed(ks: Keystore) {
-        if (ks.version !== 1 && ks.version !== 3)
+        if (ks.version !== 1 && ks.version !== 3) {
             return false
-        if (!/^[0-9a-f]{40}$/i.test(ks.address))
+        }
+        if (!/^[0-9a-f]{40}$/i.test(ks.address)) {
             return false
-        if (!/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/.test(ks.id))
+        }
+        if (!/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/.test(ks.id)) {
             return false
-        if (typeof ks.crypto !== 'object')
+        }
+        if (typeof ks.crypto !== 'object') {
             return false
+        }
         return true
     }
 }
@@ -177,13 +183,13 @@ export namespace mnemonic {
         return BIP39.validateMnemonic(words.join(' '))
     }
 
-    /** 
+    /**
      * derive private key from mnemonic words according to BIP32.
      * the derivation path is defined at https://github.com/satoshilabs/slips/blob/master/slip-0044.md
      */
     export function derivePrivateKey(words: string[]) {
-        let seed = BIP39.mnemonicToSeed(words.join(' '))
-        let hdKey = HDKey.fromMasterSeed(seed)
+        const seed = BIP39.mnemonicToSeed(words.join(' '))
+        const hdKey = HDKey.fromMasterSeed(seed)
         return hdKey.derive(VET_DERIVATION_PATH).privateKey
     }
 }
