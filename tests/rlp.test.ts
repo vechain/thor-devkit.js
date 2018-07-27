@@ -87,6 +87,10 @@ describe('rlp', () => {
         const kind = new RLP.TrimmedBlobKind(4)
         expect(kind.decode(Buffer.from([1]), '')).equal('0x00000001')
     })
+    it('trimmedBlobKind encode with all zero string', () => {
+        const kind = new RLP.TrimmedBlobKind(4)
+        expect(kind.encode('0x00000000', '').toString('hex')).equal('')
+    })
 
     it('variableBlobKind encode', () => {
         let kind = new RLP.VariableBlobKind()

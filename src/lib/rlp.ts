@@ -136,12 +136,12 @@ export namespace RLP {
     /** a blob kind that leading zero will be removed when encoded */
     export class TrimmedBlobKind extends BlobKind {
         public encode(data: string, ctx: string) {
-            let buf = super.encode(data, ctx)
+            const buf = super.encode(data, ctx)
             const nzIndex = buf.findIndex(v => v !== 0)
-            if (nzIndex > 0) {
-                buf = buf.slice(nzIndex)
+            if (nzIndex >= 0) {
+                return buf.slice(nzIndex)
             }
-            return buf
+            return Buffer.alloc(0)
         }
 
         public decode(buf: Buffer, ctx: string) {
