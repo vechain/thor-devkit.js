@@ -138,6 +138,10 @@ export namespace RLP {
         public encode(data: string, ctx: string) {
             let buf = super.encode(data, ctx)
             const nzIndex = buf.findIndex(v => v !== 0)
+            const leadingZero = buf[0] === 0
+            if (leadingZero && nzIndex < 0) {
+                return Buffer.alloc(0)
+            }
             if (nzIndex > 0) {
                 buf = buf.slice(nzIndex)
             }
