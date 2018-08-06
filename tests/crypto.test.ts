@@ -76,6 +76,23 @@ describe('keystore', () => {
 
         cpy = { ...ks, crypto: 'not an object' as any }
         expect(cry.Keystore.wellFormed(cpy)).equal(false)
+
+        cpy = { ...ks };
+        // tslint:disable-next-line:no-string-literal
+        (cpy as any)['Crypto'] = cpy.crypto
+        delete cpy.crypto
+        expect(cry.Keystore.wellFormed(cpy)).equal(true)
+
+        cpy = { ...ks };
+        // tslint:disable-next-line:no-string-literal
+        (cpy.crypto as any)['Cipher'] = (cpy.crypto as any)['cipher']
+        // tslint:disable-next-line:no-string-literal
+        delete (cpy.crypto as any)['cipher']
+        expect(cry.Keystore.wellFormed(cpy)).equal(true)
+
+        cpy = { ...ks }
+        cpy.id = cpy.id.toUpperCase()
+        expect(cry.Keystore.wellFormed(cpy)).equal(true)
     })
 })
 
