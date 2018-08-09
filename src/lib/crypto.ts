@@ -42,9 +42,10 @@ export function publicKeyToAddress(pubKey: Buffer) {
     return keccak256(pubKey.slice(1)).slice(12)
 }
 
+const secp256k1Funs = require('secp256k1')
+
 /** secp256k1 methods set */
 export namespace secp256k1 {
-    const secp256k1Funs = require('secp256k1')
     /** generate private key  */
     export function generatePrivateKey() {
         for (; ;) {
@@ -111,7 +112,10 @@ export namespace Keystore {
      * @param password password to encrypt the private key
      */
     export function encrypt(privateKey: Buffer, password: string) {
-        return new Promise<Keystore>(resolve => {
+        return new Promise<Keystore>((resolve, reject) => {
+            if (!secp256k1Funs.privateKeyVerify(privateKey)) {
+                return reject(new Error('invalid private key'))
+            }
             Keythereum.dump(password, privateKey, randomBytes(32), randomBytes(16), {
                 cipher: 'aes-128-ctr',
                 kdf: 'scrypt',
