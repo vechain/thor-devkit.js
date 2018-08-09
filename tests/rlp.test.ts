@@ -29,6 +29,7 @@ describe('rlp', () => {
     })
     it('numericKind decode', () => {
         const kind = new RLP.NumericKind(8)
+        expect(kind.decode(Buffer.alloc(0), '')).equal(0)
         expect(kind.decode(Buffer.from([1, 2, 3]), '')).equal(0x010203)
         expect(kind.decode(Buffer.from([1, 2, 3, 4, 5, 6, 7, 8]), '')).equal('0x102030405060708')
 

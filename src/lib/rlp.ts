@@ -84,9 +84,15 @@ export namespace RLP {
         public decode(buf: Buffer, ctx: string) {
             assert(this.maxBytes ? buf.length <= this.maxBytes : true, ctx,
                 `expected less than ${this.maxBytes} bytes`)
-            assert(buf.length > 0 ? buf[0] !== 0 : true, ctx,
+
+            if (buf.length === 0) {
+                return 0
+            }
+
+            assert(buf[0] !== 0, ctx,
                 `expected canonical integer (no leading zero bytes)`)
-            const bn = new BigNumber('0x' + buf.toString('hex'))
+
+            const bn = new BigNumber(buf.toString('hex'), 16)
             const num = bn.toNumber()
             return Number.isSafeInteger(num) ? num : '0x' + bn.toString(16)
         }
