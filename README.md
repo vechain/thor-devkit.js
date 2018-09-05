@@ -59,7 +59,7 @@ let recoveredPubKey = cry.secp256k1.recover(cry.keccak256('hello world'), signat
 // generate BIP39 mnemonic words, default to 12 words(128bit strength)
 let words = cry.mnemonic.generate()
 
-// derive private key from mnemonic words according to BIP32, using the path `m/44'/818'/0'/0/0`.
+// derive private key from mnemonic words according to BIP32, using the path `m/44'/818'/0'/0`.
 // defined for VET at https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 let privateKey = cry.mnemonic.derivePrivateKey(words)
 

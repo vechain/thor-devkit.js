@@ -197,7 +197,7 @@ import HDKey = require('hdkey')
 
 export namespace mnemonic {
     // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-    const VET_DERIVATION_PATH = `m/44'/818'/0'/0/0`
+    const VET_DERIVATION_PATH = `m/44'/818'/0'/0`
 
     /** generate BIP39 mnemonic words */
     export function generate() {
@@ -219,6 +219,6 @@ export namespace mnemonic {
     export function derivePrivateKey(words: string[]) {
         const seed = BIP39.mnemonicToSeed(words.join(' '))
         const hdKey = HDKey.fromMasterSeed(seed)
-        return hdKey.derive(VET_DERIVATION_PATH).privateKey
+        return hdKey.derive(VET_DERIVATION_PATH + '/0').privateKey
     }
 }
