@@ -19,7 +19,7 @@ export namespace abi {
          * encode input parameters into call data
          * @param args arguments for the function
          */
-        public encode(...args: Array<string | number | boolean | Buffer>): string {
+        public encode(...args: any[]): string {
             return ethABI.encodeFunctionCall(this.definition, args)
         }
 
@@ -59,6 +59,30 @@ export namespace abi {
         /** compute event signature */
         get signature(): string {
             return ethABI.encodeEventSignature(this.definition)
+        }
+
+        /**
+         * encode an object of indexed keys into topics.
+         * @param indexed an object contains indexed keys
+         */
+        public encode(indexed: object): Array<string | null> {
+            const topics: Array<string | null> = []
+            if (!this.definition.anonymous) {
+                topics.push(this.signature)
+            }
+            for (const input of this.definition.inputs) {
+                if (!input.indexed) {
+                    continue
+                }
+                const value = (indexed as any)[input.name]
+                if (value) {
+                    // TODO: special case for dynamic types
+                    topics.push(ethABI.encodeParameter(input.type, value))
+                } else {
+                    topics.push(null)
+                }
+            }
+            return topics
         }
 
         /**
