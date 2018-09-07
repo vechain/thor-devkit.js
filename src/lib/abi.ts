@@ -75,11 +75,11 @@ export namespace abi {
                     continue
                 }
                 const value = (indexed as any)[input.name]
-                if (value) {
+                if (value === undefined || value === null) {
+                    topics.push(null)
+                } else {
                     // TODO: special case for dynamic types
                     topics.push(ethABI.encodeParameter(input.type, value))
-                } else {
-                    topics.push(null)
                 }
             }
             return topics
