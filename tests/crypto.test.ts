@@ -20,6 +20,23 @@ describe('hash', () => {
     })
 })
 
+describe('toChecksumAddress', () => {
+    it('invalid input should throw error', () => {
+        expect(() => { cry.toChecksumAddress('invalid data') }).to.throw('invalid address')
+    })
+
+    it('valid input', () => {
+        expect(cry.toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7')).equal('0x52908400098527886E0F7030069857D2E4169EE7')
+        expect(cry.toChecksumAddress('0x8617E340B3D01FA5F11F306F4090FD50E238070D')).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
+        expect(cry.toChecksumAddress('0xde709f2102306220921060314715629080e2fb77')).equal('0xde709f2102306220921060314715629080e2fb77')
+        expect(cry.toChecksumAddress('0x27b1fdb04752bbc536007a920d24acb045561c26')).equal('0x27b1fdb04752bbc536007a920d24acb045561c26')
+        expect(cry.toChecksumAddress('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')).equal('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
+        expect(cry.toChecksumAddress('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')).equal('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')
+        expect(cry.toChecksumAddress('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')).equal('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')
+        expect(cry.toChecksumAddress('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')).equal('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')
+    })
+})
+
 describe('secp256k1', () => {
     const privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
     const pubKey = Buffer.from('04b90e9bb2617387eba4502c730de65a33878ef384a46f1096d86f2da19043304afa67d0ad09cf2bea0c6f2d1767a9e62a7a7ecc41facf18f2fa505d92243a658f', 'hex')
