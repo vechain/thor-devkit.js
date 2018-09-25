@@ -43,14 +43,22 @@ export function publicKeyToAddress(pubKey: Buffer) {
 }
 
 /**
+ * validate the address
+ * @param address the address
+ */
+export function isValidAddress(address: string) {
+    return /^0x[0-9a-f]{40}$/i.test(address)
+}
+
+/**
  * encode the address to checksum address that is compatible with eip-55
  * @param address input address
  */
 export function toChecksumAddress(address: string) {
-    if (!/^(-0x|0x)?[0-9a-fA-F]{40}$/i.test(address)) {
+    if (!isValidAddress(address)) {
         throw new Error('invalid address')
     }
-    address = address.toLowerCase().replace(/^0x/i, '')
+    address = address.slice(2).toLowerCase()
     const hash = keccak256(address).toString('hex')
 
     let checksumAddress = '0x'

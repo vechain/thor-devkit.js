@@ -20,15 +20,25 @@ describe('hash', () => {
     })
 })
 
+describe('isValidAddress', () => {
+    it('validate address', () => {
+        expect(cry.isValidAddress('not an address')).equal(false)
+        expect(cry.isValidAddress('52908400098527886E0F7030069857D2E4169EE7')).equal(false)
+        expect(cry.isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7')).equal(true)
+    })
+})
+
 describe('toChecksumAddress', () => {
     it('invalid input should throw error', () => {
         expect(() => { cry.toChecksumAddress('invalid data') }).to.throw('invalid address')
+        expect(() => { cry.toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7') }).to.throw('invalid address')
     })
 
     it('valid input', () => {
-        expect(cry.toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7')).equal('0x52908400098527886E0F7030069857D2E4169EE7')
         expect(cry.toChecksumAddress('0x8617E340B3D01FA5F11F306F4090FD50E238070D')).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
+        expect(cry.toChecksumAddress('0x8617E340B3D01FA5F11F306F4090FD50E238070D'.toLowerCase())).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
         expect(cry.toChecksumAddress('0xde709f2102306220921060314715629080e2fb77')).equal('0xde709f2102306220921060314715629080e2fb77')
+        expect(cry.toChecksumAddress('0xde709f2102306220921060314715629080e2fb77'.toLowerCase())).equal('0xde709f2102306220921060314715629080e2fb77')
         expect(cry.toChecksumAddress('0x27b1fdb04752bbc536007a920d24acb045561c26')).equal('0x27b1fdb04752bbc536007a920d24acb045561c26')
         expect(cry.toChecksumAddress('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')).equal('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
         expect(cry.toChecksumAddress('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')).equal('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')
