@@ -42,6 +42,43 @@ export function publicKeyToAddress(pubKey: Buffer) {
     return keccak256(pubKey.slice(1)).slice(12)
 }
 
+/**
+ * validate the address
+ * @param address the address
+ */
+export function isValidAddress(address: string) {
+    return /^0x[0-9a-f]{40}$/i.test(address)
+}
+
+/**
+ * encode the address to checksum address that is compatible with eip-55
+ * @param address input address
+ */
+export function toChecksumAddress(address: string) {
+    if (!isValidAddress(address)) {
+        throw new Error('invalid address')
+    }
+    address = address.slice(2).toLowerCase()
+    const hash = keccak256(address)
+
+    let checksumAddress = '0x'
+    for (let i = 0; i < address.length; i++) {
+        // tslint:disable-next-line:no-bitwise
+        let byte = hash[i >> 1]
+        if (i % 2 === 0) {
+            // tslint:disable-next-line:no-bitwise
+            byte >>= 4
+        }
+
+        if (byte % 16 >= 8) {
+            checksumAddress += address[i].toUpperCase()
+        } else {
+            checksumAddress += address[i]
+        }
+    }
+    return checksumAddress
+}
+
 const secp256k1Funs = require('secp256k1')
 
 /** secp256k1 methods set */
