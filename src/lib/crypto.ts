@@ -59,11 +59,18 @@ export function toChecksumAddress(address: string) {
         throw new Error('invalid address')
     }
     address = address.slice(2).toLowerCase()
-    const hash = keccak256(address).toString('hex')
+    const hash = keccak256(address)
 
     let checksumAddress = '0x'
     for (let i = 0; i < address.length; i++) {
-        if (parseInt(hash[i], 16) >= 8) {
+        // tslint:disable-next-line:no-bitwise
+        let byte = hash[i >> 1]
+        if (i % 2 === 0) {
+            // tslint:disable-next-line:no-bitwise
+            byte >>= 4
+        }
+
+        if (byte % 16 >= 8) {
             checksumAddress += address[i].toUpperCase()
         } else {
             checksumAddress += address[i]
