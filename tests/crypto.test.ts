@@ -22,9 +22,9 @@ describe('hash', () => {
 
 describe('isValidAddress', () => {
     it('validate address', () => {
-        expect(cry.isValidAddress('not an address')).equal(false)
-        expect(cry.isValidAddress('52908400098527886E0F7030069857D2E4169EE7')).equal(false)
-        expect(cry.isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7')).equal(true)
+        expect(cry.isAddress('not an address')).equal(false)
+        expect(cry.isAddress('52908400098527886E0F7030069857D2E4169EE7')).equal(false)
+        expect(cry.isAddress('0x52908400098527886E0F7030069857D2E4169EE7')).equal(true)
     })
 })
 
