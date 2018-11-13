@@ -17,6 +17,8 @@ describe('rlp', () => {
 
         expect(kind.encode('0x0', '').toString('hex')).equal('')
         expect(kind.encode('0x123', '').toString('hex')).equal('0123')
+        expect(kind.encode('0', '').toString('hex')).equal('')
+        expect(kind.encode('100', '').toString('hex')).equal('64')
         expect(kind.encode(0, '').toString('hex')).equal('')
         expect(kind.encode(0x123, '').toString('hex')).equal('0123')
 

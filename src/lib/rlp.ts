@@ -57,9 +57,13 @@ export namespace RLP {
             assert(typeof data === 'string' || typeof data === 'number', ctx,
                 'expected string or number')
             if (typeof data === 'string') {
-                assert(isHexString(data), ctx,
-                    'expected non-negative integer in hex string')
-                assert(data.length > 2, ctx, 'expected valid hex string')
+                const isHex = isHexString(data)
+                const isDec = isDecString(data)
+                assert(isHex || isDec, ctx,
+                    'expected non-negative integer in hex or dec string')
+                if (isHex) {
+                    assert(data.length > 2, ctx, 'expected valid hex string')
+                }
             } else {
                 assert(Number.isSafeInteger(data) && data >= 0, ctx,
                     'expected non-negative safe integer')
@@ -253,4 +257,8 @@ function assert(cond: boolean, ctx: string, msg: string) {
 
 function isHexString(str: string) {
     return /^0x[0-9a-f]*$/i.test(str)
+}
+
+function isDecString(str: string) {
+    return /^[0-9]+$/.test(str)
 }
