@@ -26,20 +26,17 @@ export class RLP {
 export namespace RLP {
     /** base class of scalar kind */
     export abstract class ScalarKind {
-        protected constructor() { }
-        public abstract encode(data: any, ctx: string): Buffer
-        public abstract decode(buf: Buffer, ctx: string): any
+        public abstract data(data: any, ctx: string): { encode(): Buffer }
+        public abstract buffer(buf: Buffer, ctx: string): { decode(): any }
     }
 
     /** a noop scalar kind */
     export class RawKind extends ScalarKind {
-        constructor() { super() }
-
-        public encode(data: any, ctx: string) {
-            return data
+        public data(data: any, ctx: string) {
+            return { encode() { return data } }
         }
-        public decode(buf: any, ctx: string) {
-            return buf
+        public buffer(buf: any, ctx: string) {
+            return { decode() { return buf } }
         }
     }
 
@@ -53,7 +50,7 @@ export namespace RLP {
             super()
         }
 
-        public encode(data: string | number, ctx: string) {
+        public data(data: string | number, ctx: string) {
             assert(typeof data === 'string' || typeof data === 'number', ctx,
                 'expected string or number')
             if (typeof data === 'string') {
@@ -71,123 +68,140 @@ export namespace RLP {
 
             const bn = new BigNumber(data)
             if (bn.isZero()) {
-                return Buffer.alloc(0)
+                return {
+                    encode() {
+                        return Buffer.alloc(0)
+                    }
+                }
             }
 
             let hex = bn.toString(16)
             if (hex.length % 2 !== 0) {
                 hex = '0' + hex
             }
-
-            const buf = Buffer.from(hex, 'hex')
-            assert(this.maxBytes ? buf.length <= this.maxBytes : true, ctx,
+            assert(this.maxBytes ? hex.length <= this.maxBytes * 2 : true, ctx,
                 `expected number in ${this.maxBytes} bytes`)
-            return buf
+
+            return {
+                encode() {
+                    return Buffer.from(hex, 'hex')
+                }
+            }
         }
 
-        public decode(buf: Buffer, ctx: string) {
+        public buffer(buf: Buffer, ctx: string) {
             assert(this.maxBytes ? buf.length <= this.maxBytes : true, ctx,
                 `expected less than ${this.maxBytes} bytes`)
-
-            if (buf.length === 0) {
-                return 0
-            }
-
-            assert(buf[0] !== 0, ctx,
+            assert(buf.length === 0 || buf[0] !== 0, ctx,
                 `expected canonical integer (no leading zero bytes)`)
 
-            const bn = new BigNumber(buf.toString('hex'), 16)
-            const num = bn.toNumber()
-            return Number.isSafeInteger(num) ? num : '0x' + bn.toString(16)
+            return {
+                decode() {
+                    if (buf.length === 0) {
+                        return 0
+                    }
+                    const bn = new BigNumber(buf.toString('hex'), 16)
+                    const num = bn.toNumber()
+                    return Number.isSafeInteger(num) ? num : '0x' + bn.toString(16)
+                }
+            }
         }
     }
 
-    /** a scalar kind to present fixed length blob */
-    export class BlobKind extends ScalarKind {
-        /**
-         * create blob kind
-         * @param bytes size of blob in bytes
-         */
-        constructor(readonly bytes: number) {
-            super()
-        }
-
-        public encode(data: string, ctx: string) {
-            assert(isHexString(data), ctx,
-                'expected hex string')
-            assert(data.length === this.bytes * 2 + 2, ctx,
-                `expected hex string presents ${this.bytes} bytes`)
-            return Buffer.from(data.slice(2), 'hex')
-        }
-
-        public decode(buf: Buffer, ctx: string) {
-            assert(buf.length === this.bytes, ctx,
-                `expected ${this.bytes} bytes`)
-            return '0x' + buf.toString('hex')
-        }
-    }
-
-    /** blob kind that can be null */
-    export class NullableBlobKind extends BlobKind {
-        public encode(data: string | null, ctx: string) {
-            if (data) {
-                return super.encode(data, ctx)
-            }
-            return Buffer.alloc(0)
-        }
-        public decode(buf: Buffer, ctx: string): any {
-            if (buf.length === 0) {
-                return null
-            }
-            return super.decode(buf, ctx)
-        }
-    }
-
-    /** a blob kind that leading zero will be removed when encoded */
-    export class TrimmedBlobKind extends BlobKind {
-        public encode(data: string, ctx: string) {
-            const buf = super.encode(data, ctx)
-            const nzIndex = buf.findIndex(v => v !== 0)
-            if (nzIndex >= 0) {
-                return buf.slice(nzIndex)
-            }
-            return Buffer.alloc(0)
-        }
-
-        public decode(buf: Buffer, ctx: string) {
-            assert(buf.length <= this.bytes, ctx,
-                `expected less than ${this.bytes} bytes`)
-
-            const zeros = '0'.repeat((this.bytes - buf.length) * 2)
-            return '0x' + zeros + buf.toString('hex')
-        }
-    }
-
-    /** a blob kind with variable length */
-    export class VariableBlobKind extends BlobKind {
-        constructor(maxBytes?: number) {
-            if (maxBytes) {
-                super(maxBytes)
-            } else {
-                super(Number.MAX_SAFE_INTEGER)
-            }
-        }
-
-        public encode(data: string, ctx: string) {
+    /** a scalar kind to present blob */
+    export class BlobKind<T = never> extends ScalarKind {
+        public data(data: string, ctx: string) {
             assert(isHexString(data), ctx,
                 'expected hex string')
             assert(data.length % 2 === 0, ctx,
                 'expected even length hex')
-            const buf = Buffer.from(data.slice(2), 'hex')
-            assert(buf.length <= this.bytes, ctx,
-                `expected less than ${this.bytes} bytes`)
-            return buf
+
+            return {
+                encode() {
+                    return Buffer.from(data.slice(2), 'hex')
+                }
+            }
         }
 
-        public decode(buf: Buffer, ctx: string) {
+        public buffer(buf: Buffer, ctx: string) {
+            return {
+                decode(): string | T {
+                    return '0x' + buf.toString('hex')
+                }
+            }
+        }
+    }
+
+    /** fixed length blob */
+    export class FixedBlobKind<T = never> extends BlobKind<T> {
+        constructor(readonly bytes: number) {
+            super()
+        }
+
+        public data(data: string, ctx: string) {
+            const encoder = super.data(data, ctx)
+            assert(data!.length === this.bytes * 2 + 2, ctx,
+                `expected hex string presents ${this.bytes} bytes`)
+            return encoder
+        }
+
+        public buffer(buf: Buffer, ctx: string) {
+            const decoder = super.buffer(buf, ctx)
+            assert(buf.length === this.bytes, ctx,
+                `expected ${this.bytes} bytes`)
+            return decoder
+        }
+    }
+
+    /** fixed length blob allowing null */
+    export class NullableFixedBlobKind extends FixedBlobKind<null> {
+        public data(data: string | null, ctx: string) {
+            if (!data) {
+                return {
+                    encode() {
+                        return Buffer.alloc(0)
+                    }
+                }
+            }
+            return super.data(data, ctx)
+        }
+
+        public buffer(buf: Buffer, ctx: string) {
+            if (buf.length === 0) {
+                return { decode() { return null } }
+            }
+            return super.buffer(buf, ctx)
+        }
+    }
+
+    /** fixed length blob kind that will remove leading zero on encoding and pad zero on decoding */
+    export class CompactFixedBlobKind extends FixedBlobKind {
+        public data(data: string, ctx: string) {
+            const buf = super.data(data, ctx).encode()
+            return {
+                encode() {
+                    const nzIndex = buf.findIndex(v => v !== 0)
+                    if (nzIndex >= 0) {
+                        return buf.slice(nzIndex)
+                    }
+                    return Buffer.alloc(0)
+                }
+            }
+        }
+        public buffer(buf: Buffer, ctx: string) {
             assert(buf.length <= this.bytes, ctx,
                 `expected less than ${this.bytes} bytes`)
-            return '0x' + buf.toString('hex')
+
+            assert(buf.length === 0 || buf[0] !== 0, ctx,
+                `expected no leading zero bytes`)
+
+            const bytes = this.bytes
+            return {
+                decode() {
+                    const zeros = '0'.repeat((bytes - buf.length) * 2)
+                    return '0x' + zeros + buf.toString('hex')
+                }
+            }
         }
     }
 
@@ -207,7 +221,7 @@ function pack(obj: any, profile: RLP.Profile, ctx: string): any {
     ctx = ctx ? ctx + '.' + profile.name : profile.name
     const kind = profile.kind
     if (kind instanceof RLP.ScalarKind) {
-        return kind.encode(obj, ctx)
+        return kind.data(obj, ctx).encode()
     }
 
     if (Array.isArray(kind)) {
@@ -228,7 +242,7 @@ function unpack(packed: any, profile: RLP.Profile, ctx: string): any {
             assert(Buffer.isBuffer(packed), ctx,
                 'expected Buffer')
         }
-        return kind.decode(packed, ctx)
+        return kind.buffer(packed, ctx).decode()
     }
 
     if (Array.isArray(kind)) {
@@ -251,7 +265,7 @@ function unpack(packed: any, profile: RLP.Profile, ctx: string): any {
 
 function assert(cond: boolean, ctx: string, msg: string) {
     if (!cond) {
-        throw new Error(`${ctx}: ${msg}`)
+        throw new RLPError(`${ctx}: ${msg}`)
     }
 }
 
@@ -261,4 +275,11 @@ function isHexString(str: string) {
 
 function isDecString(str: string) {
     return /^[0-9]+$/.test(str)
+}
+
+class RLPError extends Error {
+    constructor(msg: string) {
+        super(msg)
+        this.name = RLPError.name
+    }
 }

@@ -164,20 +164,20 @@ const unsignedTxRLP = new RLP({
     name: 'tx',
     kind: [
         { name: 'chainTag', kind: new RLP.NumericKind(1) },
-        { name: 'blockRef', kind: new RLP.TrimmedBlobKind(8) },
+        { name: 'blockRef', kind: new RLP.CompactFixedBlobKind(8) },
         { name: 'expiration', kind: new RLP.NumericKind(4) },
         {
             name: 'clauses', kind: {
                 item: [
-                    { name: 'to', kind: new RLP.NullableBlobKind(20) },
+                    { name: 'to', kind: new RLP.NullableFixedBlobKind(20) },
                     { name: 'value', kind: new RLP.NumericKind(32) },
-                    { name: 'data', kind: new RLP.VariableBlobKind() },
+                    { name: 'data', kind: new RLP.BlobKind() },
                 ],
             },
         },
         { name: 'gasPriceCoef', kind: new RLP.NumericKind(1) },
         { name: 'gas', kind: new RLP.NumericKind(8) },
-        { name: 'dependsOn', kind: new RLP.NullableBlobKind(32) },
+        { name: 'dependsOn', kind: new RLP.NullableFixedBlobKind(32) },
         { name: 'nonce', kind: new RLP.NumericKind(8) },
         { name: 'reserved', kind: new RLP.RawKind() },
     ],
@@ -185,5 +185,5 @@ const unsignedTxRLP = new RLP({
 
 const txRLP = new RLP({
     name: 'tx',
-    kind: [...(unsignedTxRLP.profile.kind as RLP.Profile[]), { name: 'signature', kind: new RLP.VariableBlobKind() }],
+    kind: [...(unsignedTxRLP.profile.kind as RLP.Profile[]), { name: 'signature', kind: new RLP.BlobKind() }],
 })

@@ -83,9 +83,9 @@ ok = cry.Keystore.wellFormed(keystore)
 let profile: RLP.Profile = {
     name: 'clause',
     kind: [
-        { name: 'to', kind: new RLP.NullableBlobKind(20) },
+        { name: 'to', kind: new RLP.NullableFixedBlobKind(20) },
         { name: 'value', kind: new RLP.NumericKind(32) },
-        { name: 'data', kind: new RLP.VariableBlobKind() }
+        { name: 'data', kind: new RLP.BlobKind() }
     ]
 }
 
