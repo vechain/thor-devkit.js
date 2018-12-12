@@ -18,7 +18,8 @@
         "interface-name": false,
         "max-classes-per-file": false,
         "arrow-parens": false,
-        "object-literal-sort-keys": false
+        "object-literal-sort-keys": false,
+        "trailing-comma": false
     },
     "rulesDirectory": []
 }
