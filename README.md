@@ -23,7 +23,9 @@ import {
     cry,
     abi,
     RLP,
-    Transaction
+    Transaction,
+    Certificate,
+    Bloom
 } from 'thor-devkit'
 ```
 
@@ -136,6 +138,30 @@ tx.signature = cry.secp256k1.sign(signingHash, /* your private key */)
 
 let raw = tx.encode()
 let decoded = Transaction.decode(raw)
+```
+
+### Certificate
+
+supports client side self-signed certificate
+
+```javascript
+let cert: Certificate = {
+    purpose: 'identification',
+    payload: {
+        type: 'text',
+        content: 'fyi'
+    },
+    domain: 'localhost',
+    timestamp: 1545035330,
+    signer: <<<signer-address>>>
+}
+
+let jsonStr = Certificate.encode(cert)
+let signature = secp256k1.sign(cry.blake2b256(jsonStr), <<<private-key>>>)
+
+cert.signature = '0x' + signature.toString('hex')
+
+Certificate.verify(cert)
 ```
 
 ### ABI
