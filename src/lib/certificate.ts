@@ -1,4 +1,4 @@
-import { blake2b256, publicKeyToAddress, secp256k1 } from './crypto'
+import { blake2b256, publicKeyToAddress, secp256k1 } from './cry'
 const fastJsonStableStringify = require('fast-json-stable-stringify')
 
 /**

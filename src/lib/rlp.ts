@@ -1,5 +1,5 @@
-import { BigNumber } from 'bignumber.js'
-const rlp = require('rlp')
+import BigNumber from 'bignumber.js'
+import * as rlp from 'rlp'
 
 export class RLP {
     constructor(readonly profile: RLP.Profile) { }
@@ -10,7 +10,7 @@ export class RLP {
      */
     public encode(data: any) {
         const packed = pack(data, this.profile, '')
-        return rlp.encode(packed) as Buffer
+        return rlp.encode(packed) as any as Buffer
     }
 
     /**
@@ -18,7 +18,7 @@ export class RLP {
      * @param buf rlp encoded data
      */
     public decode(buf: Buffer) {
-        const packed = rlp.decode(buf)
+        const packed = rlp.decode(buf as any)
         return unpack(packed, this.profile, '')
     }
 }
