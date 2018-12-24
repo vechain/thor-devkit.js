@@ -1,8 +1,8 @@
-export * from './lib/abi'
-export * from './lib/transaction'
-export * from './lib/rlp'
-export * from './lib/bloom'
-export * from './lib/certificate'
+export * from './abi'
+export * from './transaction'
+export * from './rlp'
+export * from './bloom'
+export * from './certificate'
 
-import * as cry from './lib/cry'
+import * as cry from './cry'
 export { cry }

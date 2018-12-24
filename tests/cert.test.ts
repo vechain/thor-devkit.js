@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Certificate, cry } from '../src'
-import { secp256k1 } from '../src/lib/cry'
+import { secp256k1 } from '../src/cry'
 
 describe('cert', () => {
     const privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')

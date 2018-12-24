@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 
-const BIP39 = require('bip39')
-const HDKey = require('hdkey')
+import BIP39 from 'bip39'
+import HDKey from 'hdkey'
 
 export namespace mnemonic {
     // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
