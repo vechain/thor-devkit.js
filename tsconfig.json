@@ -6,9 +6,7 @@
     "outDir": "./dist",
     "inlineSourceMap": true,
     "declaration": true,
-    "importHelpers": true,
     "moduleResolution": "node",
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
   },
   "include": [
