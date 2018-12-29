@@ -1,4 +1,16 @@
-const ethABI = require('web3-eth-abi')
+const ethABI = require('web3-eth-abi');
+
+(ethABI._types as [any]).forEach(t => {
+    if (Object.getPrototypeOf(t).constructor.name === 'SolidityTypeAddress') {
+        t._outputFormatter = (param: any, name: any) => {
+            const value = param.staticPart()
+            if (!value) {
+                throw new Error('Couldn\'t decode ' + name + ' from ABI: 0x' + param.rawValue)
+            }
+            return '0x' + value.slice(value.length - 40, value.length)
+        }
+    }
+})
 
 /** encode/decode parameters of contract function call, event log, according to ABI JSON */
 export namespace abi {
