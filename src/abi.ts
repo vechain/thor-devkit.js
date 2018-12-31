@@ -16,15 +16,15 @@ const ethABI = require('web3-eth-abi');
 export namespace abi {
     /** for contract function */
     export class Function {
+        /** the function signature, aka. 4 bytes prefix */
+        public readonly signature: string
+
         /**
          * create a function object
          * @param definition abi definition of the function
          */
-        constructor(public readonly definition: Function.Definition) { }
-
-        /** compute function signature */
-        get signature(): string {
-            return ethABI.encodeFunctionSignature(this.definition)
+        constructor(public readonly definition: Function.Definition) {
+            this.signature = ethABI.encodeFunctionSignature(definition)
         }
 
         /**
@@ -65,12 +65,12 @@ export namespace abi {
 
     /** for contract event */
     export class Event {
-        /** for contract event */
-        constructor(public readonly definition: Event.Definition) { }
+        /** the event signature */
+        public readonly signature: string
 
-        /** compute event signature */
-        get signature(): string {
-            return ethABI.encodeEventSignature(this.definition)
+        /** for contract event */
+        constructor(public readonly definition: Event.Definition) {
+            this.signature = ethABI.encodeEventSignature(this.definition)
         }
 
         /**
