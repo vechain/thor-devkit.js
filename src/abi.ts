@@ -1,4 +1,4 @@
-const ethABI = require('web3-eth-abi');
+const ethABI = require('@vechain/web3-eth-abi');
 
 (ethABI._types as [any]).forEach(t => {
     if (Object.getPrototypeOf(t).constructor.name === 'SolidityTypeAddress') {
