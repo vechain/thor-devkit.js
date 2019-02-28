@@ -19,12 +19,19 @@ export interface Certificate {
 }
 
 export namespace Certificate {
+    function safeToLowerCase(str: string) {
+        return typeof str === 'string' ? str.toLowerCase() : str
+    }
     /**
      * deterministically encode cert into JSON
      * @param cert cert object
      */
     export function encode(cert: Certificate) {
-        return fastJsonStableStringify(cert) as string
+        return fastJsonStableStringify({
+            ...cert,
+            signer: safeToLowerCase(cert.signer),
+            signature: cert.signature ? safeToLowerCase(cert.signature) : cert.signature
+        }) as string
     }
 
     /**
@@ -40,12 +47,12 @@ export namespace Certificate {
             throw new Error('invalid signature')
         }
 
-        const encoded = fastJsonStableStringify({ ...cert, signature: undefined })
+        const encoded = encode({ ...cert, signature: undefined })
         const signingHash = blake2b256(encoded)
 
         const pubKey = secp256k1.recover(signingHash, Buffer.from(signature.slice(2), 'hex'))
 
-        if ('0x' + publicKeyToAddress(pubKey).toString('hex') !== cert.signer) {
+        if ('0x' + publicKeyToAddress(pubKey).toString('hex') !== safeToLowerCase(cert.signer)) {
             throw new Error('signature does not match with signer')
         }
     }

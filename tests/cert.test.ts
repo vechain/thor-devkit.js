@@ -27,11 +27,16 @@ describe('cert', () => {
     }
     it('encode', () => {
         expect(Certificate.encode(cert)).equal(Certificate.encode(cert2))
+        expect(Certificate.encode(cert)).equal(Certificate.encode({ ...cert, signer: cert.signer.toUpperCase() }))
+        const sig = '0x' + secp256k1.sign(cry.blake2b256(Certificate.encode(cert)), privKey).toString('hex')
+        expect(Certificate.encode({ ...cert, signature: sig }))
+            .equal(Certificate.encode({ ...cert, signature: sig.toUpperCase() }))
     })
 
     it('verify', () => {
         const sig = '0x' + secp256k1.sign(cry.blake2b256(Certificate.encode(cert)), privKey).toString('hex')
         expect(() => Certificate.verify({ ...cert, signature: sig, signer: '0x' })).to.throw()
         expect(() => Certificate.verify({ ...cert, signature: sig })).not.to.throw()
+        expect(() => Certificate.verify({ ...cert, signature: sig.toUpperCase() })).not.to.throw()
     })
 })

@@ -162,6 +162,9 @@ let signature = secp256k1.sign(cry.blake2b256(jsonStr), <<<private-key>>>)
 cert.signature = '0x' + signature.toString('hex')
 
 Certificate.verify(cert)
+
+// certificate id
+let id = '0x' + cry.blake2b256(Certificate.encode(cert)).toString('hex')
 ```
 
 ### ABI
