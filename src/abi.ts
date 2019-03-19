@@ -1,17 +1,41 @@
-const ethABI = require('@vechain/web3-eth-abi');
-
-// avoid address checksumed
-(ethABI._types as [any]).forEach(t => {
-    if (Object.getPrototypeOf(t).constructor.name === 'SolidityTypeAddress') {
-        t._outputFormatter = (param: any, name: any) => {
-            const value = param.staticPart()
-            if (!value) {
-                throw new Error('Couldn\'t decode ' + name + ' from ABI: 0x' + param.rawValue)
+import { AbiCoder, formatSignature } from 'ethers/utils/abi-coder'
+import { keccak256 } from './cry'
+const coder = (() => {
+    const c = new AbiCoder((type, value) => {
+        if ((type.match(/^u?int/) && !Array.isArray(value) && typeof value !== 'object') ||
+            value.constructor.name === 'BigNumber'
+        ) {
+            return value.toString()
+        }
+        if (type === 'address' && typeof value === 'string') {
+            // fucking checksum. it's too stupid to checksum address in non-ui part.
+            return value.toLowerCase()
+        }
+        return value
+    })
+    return {
+        encode(types: string[], values: any[]): string {
+            try {
+                return c.encode(types, values)
+            } catch (err) {
+                if (err.reason) {
+                    throw new Error(err.reason)
+                }
+                throw err
             }
-            return '0x' + value.slice(value.length - 40, value.length)
+        },
+        decode(types: string[], data: string): any[] {
+            try {
+                return c.decode(types, data)
+            } catch (err) {
+                if (err.reason) {
+                    throw new Error(err.reason)
+                }
+                throw err
+            }
         }
     }
-})
+})()
 
 /** encode/decode parameters of contract function call, event log, according to ABI JSON */
 export namespace abi {
@@ -23,7 +47,7 @@ export namespace abi {
      * @returns encoded value in hex string
      */
     export function encodeParameter(type: string, value: any) {
-        return ethABI.encodeParameter(type, value) as string
+        return coder.encode([type], [value])
     }
 
     /**
@@ -33,7 +57,7 @@ export namespace abi {
      * @returns decoded value
      */
     export function decodeParameter(type: string, data: string) {
-        return ethABI.decodeParameter(type, data) as string
+        return coder.decode([type], data)[0]
     }
 
     /**
@@ -43,7 +67,7 @@ export namespace abi {
      * @returns encoded values in hex string
      */
     export function encodeParameters(types: Function.Parameter[], values: any[]) {
-        return ethABI.encodeParameters(types.map(p => p.type), values) as string
+        return coder.encode(types.map(p => p.type), values)
     }
 
     /**
@@ -53,7 +77,13 @@ export namespace abi {
      * @returns decoded object
      */
     export function decodeParameters(types: Function.Parameter[], data: string) {
-        return ethABI.decodeParameters(types, data) as Decoded
+        const result = coder.decode(types.map(p => p.type), data)
+        const decoded: Decoded = {}
+        types.forEach((t, i) => {
+            decoded[i] = result[i]
+            decoded[t.name] = result[i]
+        })
+        return decoded
     }
 
     /** for contract function */
@@ -66,7 +96,7 @@ export namespace abi {
          * @param definition abi definition of the function
          */
         constructor(public readonly definition: Function.Definition) {
-            this.signature = ethABI.encodeFunctionSignature(definition)
+            this.signature = '0x' + keccak256(formatSignature(definition as any)).slice(0, 4).toString('hex')
         }
 
         /**
@@ -111,7 +141,7 @@ export namespace abi {
 
         /** for contract event */
         constructor(public readonly definition: Event.Definition) {
-            this.signature = ethABI.encodeEventSignature(this.definition)
+            this.signature = '0x' + keccak256(formatSignature(definition as any)).toString('hex')
         }
 
         /**
@@ -131,8 +161,19 @@ export namespace abi {
                 if (value === undefined || value === null) {
                     topics.push(null)
                 } else {
-                    // TODO: special case for dynamic types
-                    topics.push(encodeParameter(input.type, value))
+                    if (isDynamicType(input.type)) {
+                        if (input.type === 'string') {
+                            topics.push('0x' + keccak256(value).toString('hex'))
+                        } else {
+                            if (typeof value === 'string' && /^0x[0-9a-f]+$/i.test(value) && value.length % 2 === 0) {
+                                topics.push('0x' + keccak256(Buffer.from(value.slice(2), 'hex')).toString('hex'))
+                            } else {
+                                throw new Error(`invalid ${input.type} value`)
+                            }
+                        }
+                    } else {
+                        topics.push(encodeParameter(input.type, value))
+                    }
                 }
             }
             return topics
@@ -144,10 +185,31 @@ export namespace abi {
          * @param topics topics in event
          */
         public decode(data: string, topics: string[]) {
-            return ethABI.decodeLog(
-                this.definition.inputs,
-                data,
-                this.definition.anonymous ? topics : topics.slice(1)) as Decoded
+            if (!this.definition.anonymous) {
+                topics = topics.slice(1)
+            }
+
+            if (this.definition.inputs.filter(t => t.indexed).length !== topics.length) {
+                throw new Error('invalid topics count')
+            }
+
+            const decodedNonIndexed = coder.decode(
+                this.definition.inputs.filter(t => !t.indexed).map(t => t.type), data)
+
+            const decoded: Decoded = {}
+            this.definition.inputs.forEach((t, i) => {
+                if (t.indexed) {
+                    if (isDynamicType(t.type)) {
+                        decoded[i] = decoded[t.name] = topics.shift()
+                    } else {
+                        decoded[i] = decoded[t.name] = decodeParameter(t.type, topics.shift()!)
+                    }
+                } else {
+                    decoded[i] = decoded[t.name] = decodedNonIndexed.shift()
+                }
+            })
+
+            return decoded
         }
     }
 
@@ -166,5 +228,9 @@ export namespace abi {
         }
     }
 
-    export type Decoded = { __length__: number } & { [field: string]: string }
+    export type Decoded = { [field: string]: any } & { [index: number]: any }
+
+    function isDynamicType(type: string) {
+        return type === 'bytes' || type === 'string' || type.endsWith('[]')
+    }
 }

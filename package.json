@@ -1,6 +1,6 @@
 {
   "name": "thor-devkit",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Typescript library to aid DApp development on VeChain Thor",
   "main": "dist/index.js",
   "module": "es6/index.js",
@@ -70,10 +70,10 @@
     "typescript": "^2.9.1"
   },
   "dependencies": {
-    "@vechain/web3-eth-abi": "^1.0.0-beta.34-2",
     "bignumber.js": "^7.2.1",
     "bip39": "^2.5.0",
     "blakejs": "^1.1.0",
+    "ethers": "^4.0.27",
     "fast-json-stable-stringify": "^2.0.0",
     "hdkey": "^1.0.0",
     "keccak": "^1.4.0",
