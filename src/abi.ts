@@ -1,5 +1,6 @@
 import { AbiCoder, formatSignature } from 'ethers/utils/abi-coder'
 import { keccak256 } from './cry'
+
 const coder = (() => {
     const c = new AbiCoder((type, value) => {
         if ((type.match(/^u?int/) && !Array.isArray(value) && typeof value !== 'object') ||
@@ -81,7 +82,9 @@ export namespace abi {
         const decoded: Decoded = {}
         types.forEach((t, i) => {
             decoded[i] = result[i]
-            decoded[t.name] = result[i]
+            if (t.name) {
+                decoded[t.name] = result[i]
+            }
         })
         return decoded
     }
@@ -199,16 +202,16 @@ export namespace abi {
             const decoded: Decoded = {}
             this.definition.inputs.forEach((t, i) => {
                 if (t.indexed) {
-                    if (isDynamicType(t.type)) {
-                        decoded[i] = decoded[t.name] = topics.shift()
-                    } else {
-                        decoded[i] = decoded[t.name] = decodeParameter(t.type, topics.shift()!)
-                    }
+                    const topic = topics.shift()!
+                    decoded[i] = isDynamicType(t.type) ?
+                        topic : decodeParameter(t.type, topic)
                 } else {
-                    decoded[i] = decoded[t.name] = decodedNonIndexed.shift()
+                    decoded[i] = decodedNonIndexed.shift()
+                }
+                if (t.name) {
+                    decoded[t.name] = decoded[i]
                 }
             })
-
             return decoded
         }
     }
