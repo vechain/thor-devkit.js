@@ -1,4 +1,4 @@
-import { AbiCoder, formatSignature } from '@vechain/ethers/utils/abi-coder'
+import { AbiCoder, formatSignature as _formatSignature } from '@vechain/ethers/utils/abi-coder'
 import { keccak256 } from './cry'
 
 class Coder extends AbiCoder {
@@ -37,6 +37,17 @@ class Coder extends AbiCoder {
 }
 
 const coder = new Coder()
+
+function formatSignature(fragment: any) {
+    try {
+        return _formatSignature(fragment)
+    } catch (err) {
+        if (err.reason) {
+            throw new Error(err.reason)
+        }
+        throw err
+    }
+}
 
 /** encode/decode parameters of contract function call, event log, according to ABI JSON */
 export namespace abi {
@@ -91,6 +102,9 @@ export namespace abi {
 
     /** for contract function */
     export class Function {
+        /** canonical name */
+        public readonly canonicalName: string
+
         /** the function signature, aka. 4 bytes prefix */
         public readonly signature: string
 
@@ -99,7 +113,8 @@ export namespace abi {
          * @param definition abi definition of the function
          */
         constructor(public readonly definition: Function.Definition) {
-            this.signature = '0x' + keccak256(formatSignature(definition as any)).slice(0, 4).toString('hex')
+            this.canonicalName = formatSignature(definition)
+            this.signature = '0x' + keccak256(this.canonicalName).slice(0, 4).toString('hex')
         }
 
         /**
@@ -139,12 +154,16 @@ export namespace abi {
 
     /** for contract event */
     export class Event {
+        /** canonical name */
+        public readonly canonicalName: string
+
         /** the event signature */
         public readonly signature: string
 
         /** for contract event */
         constructor(public readonly definition: Event.Definition) {
-            this.signature = '0x' + keccak256(formatSignature(definition as any)).toString('hex')
+            this.canonicalName = formatSignature(definition)
+            this.signature = '0x' + keccak256(this.canonicalName).toString('hex')
         }
 
         /**
@@ -233,7 +252,7 @@ export namespace abi {
         }
     }
 
-    export type Decoded = { [field: string]: any } & { [index: number]: any }
+    export type Decoded = { [name: string]: any } & { [index: number]: any }
 
     function isDynamicType(type: string) {
         return type === 'bytes' || type === 'string' || type.endsWith('[]')
