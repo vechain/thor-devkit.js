@@ -5,8 +5,7 @@ class Coder extends AbiCoder {
     constructor() {
         super((type, value) => {
             if ((type.match(/^u?int/) && !Array.isArray(value) && typeof value !== 'object') ||
-                value.constructor.name === 'BigNumber'
-            ) {
+                value._ethersType === 'BigNumber') {
                 return value.toString()
             }
             return value
