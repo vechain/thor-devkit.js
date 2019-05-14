@@ -6,10 +6,10 @@ import { RLP } from '../src'
 // tslint:disable:trailing-comma
 
 describe('rlp', () => {
-    it('rawKind', () => {
-        const kind = new RLP.RawKind()
-        expect(kind.data('foo', '').encode()).equal('foo')
-        expect(kind.buffer('bar', '').decode()).equal('bar')
+    it('bufferKind', () => {
+        const kind = new RLP.BufferKind()
+        expect(kind.data(Buffer.from('ff', 'hex'), '').encode()).deep.equal(Buffer.from('ff', 'hex'))
+        expect(kind.buffer(Buffer.from('ff', 'hex'), '').decode()).deep.equal(Buffer.from('ff', 'hex'))
     })
     it('blobKind encode', () => {
         const kind = new RLP.BlobKind()

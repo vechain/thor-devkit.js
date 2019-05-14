@@ -30,12 +30,13 @@ export namespace RLP {
         public abstract buffer(buf: Buffer, ctx: string): { decode(): any }
     }
 
-    /** a noop scalar kind */
-    export class RawKind extends ScalarKind {
-        public data(data: any, ctx: string) {
+    /** a buffer kind to keep buffer type */
+    export class BufferKind extends ScalarKind {
+        public data(data: Buffer, ctx: string) {
+            assert(Buffer.isBuffer(data), ctx, 'expected buffer')
             return { encode() { return data } }
         }
-        public buffer(buf: any, ctx: string) {
+        public buffer(buf: Buffer, ctx: string) {
             return { decode() { return buf } }
         }
     }
@@ -238,10 +239,8 @@ function unpack(packed: any, profile: RLP.Profile, ctx: string): any {
     ctx = ctx ? ctx + '.' + profile.name : profile.name
     const kind = profile.kind
     if (kind instanceof RLP.ScalarKind) {
-        if (!(kind instanceof RLP.RawKind)) {
-            assert(Buffer.isBuffer(packed), ctx,
-                'expected Buffer')
-        }
+        assert(Buffer.isBuffer(packed), ctx,
+            'expected Buffer')
         return kind.buffer(packed, ctx).decode()
     }
 
