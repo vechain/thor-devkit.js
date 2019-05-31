@@ -64,65 +64,6 @@ describe('secp256k1', () => {
     })
 })
 
-describe('keystore', () => {
-    const privKey = cry.secp256k1.generatePrivateKey()
-
-    it('encrypt', async () => {
-        const ks = await cry.Keystore.encrypt(privKey, '123')
-        expect(ks.version).equal(3)
-        expect(ks.address).equal(cry.publicKeyToAddress(cry.secp256k1.derivePublicKey(privKey)).toString('hex'))
-    })
-
-    it('decrypt', async () => {
-        const ks = await cry.Keystore.encrypt(privKey, '123')
-        const dprivKey = await cry.Keystore.decrypt(ks, '123')
-        expect(dprivKey).deep.equal(privKey)
-
-        let fail
-        try {
-            await cry.Keystore.decrypt(ks, 'wrong pass')
-            fail = false
-        } catch {
-            fail = true
-        }
-        expect(fail).equal(true)
-    })
-
-    it('validate', async () => {
-        const ks = await cry.Keystore.encrypt(privKey, '123')
-        expect(cry.Keystore.wellFormed(ks)).equal(true)
-
-        let cpy = { ...ks, version: 0 }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
-
-        cpy = { ...ks, address: 'not an address' }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
-
-        cpy = { ...ks, id: 'not an id' }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
-
-        cpy = { ...ks, crypto: 'not an object' as any }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
-
-        cpy = { ...ks };
-        // tslint:disable-next-line:no-string-literal
-        (cpy as any)['Crypto'] = cpy.crypto
-        delete cpy.crypto
-        expect(cry.Keystore.wellFormed(cpy)).equal(true)
-
-        cpy = { ...ks };
-        // tslint:disable-next-line:no-string-literal
-        (cpy.crypto as any)['Cipher'] = (cpy.crypto as any)['cipher']
-        // tslint:disable-next-line:no-string-literal
-        delete (cpy.crypto as any)['cipher']
-        expect(cry.Keystore.wellFormed(cpy)).equal(true)
-
-        cpy = { ...ks }
-        cpy.id = cpy.id.toUpperCase()
-        expect(cry.Keystore.wellFormed(cpy)).equal(true)
-    })
-})
-
 describe('mnemonic', () => {
     it('generate', () => {
         expect(cry.mnemonic.generate().length).equal(12)

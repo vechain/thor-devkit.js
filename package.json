@@ -77,7 +77,6 @@
     "fast-json-stable-stringify": "^2.0.0",
     "hdkey": "^1.0.0",
     "keccak": "^1.4.0",
-    "keythereum": "^1.0.4",
     "rlp": "^2.0.0",
     "secp256k1": "3.5.0"
   },
