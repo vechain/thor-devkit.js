@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vechain/thor-devkit.js.git"
+    "url": "git+https://github.com/ExodusMovement/thor-devkit.js.git"
   },
   "keywords": [
     "vechain",
@@ -54,7 +54,7 @@
   "bugs": {
     "url": "https://github.com/vechain/thor-devkit.js/issues"
   },
-  "homepage": "https://github.com/vechain/thor-devkit.js#readme",
+  "homepage": "https://github.com/ExodusMovement/thor-devkit.js#readme",
   "devDependencies": {
     "@types/bip39": "^2.4.0",
     "@types/chai": "^4.1.3",
