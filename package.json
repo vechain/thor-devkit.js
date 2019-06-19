@@ -1,6 +1,6 @@
 {
   "name": "@exodus/thor-devkit",
-  "version": "0.11.0-exodus0",
+  "version": "0.11.0-exodus1",
   "description": "Typescript library to aid DApp development on VeChain Thor",
   "main": "dist/index.js",
   "module": "es6/index.js",
@@ -61,7 +61,6 @@
     "@types/mocha": "^5.2.1",
     "@types/node": "^10.5.2",
     "chai": "^4.1.2",
-    "coveralls": "^3.0.1",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1",
     "ts-node": "^6.1.0",
