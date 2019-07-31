@@ -1,4 +1,4 @@
-import { blake2b256 } from './cry'
+import { blake2b256 } from './cry/blake2b'
 
 /**
  * 2048 bits Bloom filter
