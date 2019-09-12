@@ -1,5 +1,4 @@
-import { randomBytes } from 'crypto'
-const Keythereum = require('keythereum')
+import * as SecretStorage from '@vechain/ethers/utils/secret-storage'
 
 /** to present encrypted private key in Ethereum keystore format. */
 export interface Keystore {
@@ -16,19 +15,15 @@ export namespace Keystore {
      * @param password password to encrypt the private key
      */
     export function encrypt(privateKey: Buffer, password: string) {
-        return new Promise<Keystore>(resolve => {
-            Keythereum.dump(password, privateKey, randomBytes(32), randomBytes(16), {
-                cipher: 'aes-128-ctr',
-                kdf: 'scrypt',
-                kdfparams: {
-                    dklen: 32,
-                    memory: 280000000,
-                    n: 262144,
-                    p: 1,
-                    r: 8,
-                },
-            }, resolve)
-        })
+        return SecretStorage.encrypt(
+            '0x' + privateKey.toString('hex'),
+            password, {
+            scrypt: {
+                N: 131072,
+                p: 1,
+                r: 8
+            }
+        }).then(str => normalize(JSON.parse(str)))
     }
 
     /**
@@ -38,14 +33,8 @@ export namespace Keystore {
      * @param password password to decrypt keystore
      */
     export function decrypt(ks: Keystore, password: string) {
-        return new Promise<Buffer>((resolve, reject) => {
-            Keythereum.recover(password, validate(normalize(ks)), (r: Buffer | Error) => {
-                if (!Buffer.isBuffer(r)) {
-                    return reject(r)
-                }
-                resolve(r)
-            })
-        })
+        return SecretStorage.decrypt(JSON.stringify(ks), password)
+            .then(sk => Buffer.from(sk.privateKey.slice(2), 'hex'))
     }
 
     /**

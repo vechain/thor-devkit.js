@@ -1,11 +1,10 @@
-const keccak = require('keccak')
-
+import { keccak_256 } from 'js-sha3'
 /**
  * computes keccak256 hash of given data
  * @param data one or more Buffer | string
  */
 export function keccak256(...data: Array<Buffer | string>) {
-    const h = keccak('keccak256')
+    const h = keccak_256.create()
     data.forEach(d => {
         if (Buffer.isBuffer(d)) {
             h.update(d)
@@ -13,5 +12,5 @@ export function keccak256(...data: Array<Buffer | string>) {
             h.update(Buffer.from(d, 'utf8'))
         }
     })
-    return h.digest() as Buffer
+    return Buffer.from(h.digest())
 }
