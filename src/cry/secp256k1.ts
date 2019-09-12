@@ -1,5 +1,14 @@
 import { randomBytes } from 'crypto'
-const secp256k1Funs = require('secp256k1')
+import { ec as EC } from 'elliptic'
+
+const curve = new EC('secp256k1')
+
+const N = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141')
+const ZERO = Buffer.alloc(32, 0)
+
+function isValidPrivateKey(key: Buffer) {
+    return !key.equals(ZERO) && key.compare(N) < 0
+}
 
 /** secp256k1 methods set */
 export namespace secp256k1 {
@@ -7,7 +16,7 @@ export namespace secp256k1 {
     export function generatePrivateKey() {
         for (; ;) {
             const privKey = randomBytes(32)
-            if (secp256k1Funs.privateKeyVerify(privKey)) {
+            if (isValidPrivateKey(privKey)) {
                 return privKey
             }
         }
@@ -18,7 +27,8 @@ export namespace secp256k1 {
      * @param privKey the private key
      */
     export function derivePublicKey(privKey: Buffer) {
-        return secp256k1Funs.publicKeyCreate(privKey, false /* uncompressed */) as Buffer
+        const keyPair = curve.keyFromPrivate(privKey)
+        return Buffer.from(keyPair.getPublic().encode('array', false) as any)
     }
 
     /**
@@ -27,11 +37,13 @@ export namespace secp256k1 {
      * @param privKey serialized private key
      */
     export function sign(msgHash: Buffer, privKey: Buffer) {
-        const sig = secp256k1Funs.sign(msgHash, privKey)
-        const packed = Buffer.alloc(65)
-        sig.signature.copy(packed)
-        packed[64] = sig.recovery
-        return packed
+        const keyPair = curve.keyFromPrivate(privKey)
+        const sig = keyPair.sign(msgHash, { canonical: true })
+
+        const r = sig.r.toBuffer('be')
+        const s = sig.s.toBuffer('be')
+
+        return Buffer.concat([r, s, Buffer.from([sig.recoveryParam!])])
     }
 
     /**
@@ -48,6 +60,13 @@ export namespace secp256k1 {
             throw new Error('invalid signature recovery')
         }
 
-        return secp256k1Funs.recover(msgHash, sig.slice(0, 64), recovery, false) as Buffer
+        const r = sig.slice(0, 32)
+        const s = sig.slice(32, 64)
+
+        return Buffer.from(curve.recoverPubKey(
+            msgHash,
+            { r, s },
+            recovery
+        ).encode('array', false))
     }
 }

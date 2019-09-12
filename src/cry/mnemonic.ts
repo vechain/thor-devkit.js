@@ -1,7 +1,9 @@
+import {
+    entropyToMnemonic,
+    fromMnemonic,
+    isValidMnemonic
+} from '@vechain/ethers/utils/hdnode'
 import { randomBytes } from 'crypto'
-
-import * as BIP39 from 'bip39'
-const HDKey = require('hdkey')
 
 export namespace mnemonic {
     // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
@@ -9,7 +11,7 @@ export namespace mnemonic {
 
     /** generate BIP39 mnemonic words */
     export function generate() {
-        return BIP39.generateMnemonic(128, randomBytes).split(' ')
+        return entropyToMnemonic(randomBytes(128 / 8)).split(' ')
     }
 
     /**
@@ -17,7 +19,7 @@ export namespace mnemonic {
      * @param words mnemonic words
      */
     export function validate(words: string[]) {
-        return BIP39.validateMnemonic(words.join(' '))
+        return isValidMnemonic(words.join(' '))
     }
 
     /**
@@ -25,8 +27,7 @@ export namespace mnemonic {
      * the derivation path is defined at https://github.com/satoshilabs/slips/blob/master/slip-0044.md
      */
     export function derivePrivateKey(words: string[]): Buffer {
-        const seed = BIP39.mnemonicToSeed(words.join(' '))
-        const hdKey = HDKey.fromMasterSeed(seed)
-        return hdKey.derive(VET_DERIVATION_PATH + '/0').privateKey
+        const node = fromMnemonic(words.join(' '))
+        return Buffer.from(node.derivePath(VET_DERIVATION_PATH + '/0').privateKey.slice(2), 'hex')
     }
 }
