@@ -3,7 +3,7 @@ import {
     fromMnemonic,
     isValidMnemonic
 } from '@vechain/ethers/utils/hdnode'
-import { randomBytes } from 'crypto'
+import * as randomBytes from 'randombytes'
 
 export namespace mnemonic {
     // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
