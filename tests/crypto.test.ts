@@ -63,17 +63,3 @@ describe('secp256k1', () => {
         expect(cry.secp256k1.recover(msgHash, sig)).deep.equal(pubKey)
     })
 })
-
-describe('mnemonic', () => {
-    it('generate', () => {
-        expect(cry.mnemonic.generate().length).equal(12)
-    })
-    it('validate', () => {
-        expect(cry.mnemonic.validate(['hello', 'world'])).equal(false)
-        expect(cry.mnemonic.validate(cry.mnemonic.generate())).equal(true)
-    })
-    it('derive', () => {
-        const words = 'ignore empty bird silly journey junior ripple have guard waste between tenant'.split(' ')
-        expect(cry.mnemonic.derivePrivateKey(words).toString('hex')).equal('27196338e7d0b5e7bf1be1c0327c53a244a18ef0b102976980e341500f492425')
-    })
-})
