@@ -124,6 +124,8 @@ describe('keystore', () => {
 })
 
 describe('mnemonic', () => {
+    const words = 'ignore empty bird silly journey junior ripple have guard waste between tenant'.split(' ')
+
     it('generate', () => {
         expect(cry.mnemonic.generate().length).equal(12)
     })
@@ -132,7 +134,35 @@ describe('mnemonic', () => {
         expect(cry.mnemonic.validate(cry.mnemonic.generate())).equal(true)
     })
     it('derive', () => {
-        const words = 'ignore empty bird silly journey junior ripple have guard waste between tenant'.split(' ')
         expect(cry.mnemonic.derivePrivateKey(words).toString('hex')).equal('27196338e7d0b5e7bf1be1c0327c53a244a18ef0b102976980e341500f492425')
+    })
+    it('hdNode', () => {
+        const node = cry.mnemonic.HDNode.fromMnemonic(words)
+        const addresses = [
+            '339fb3c438606519e2c75bbf531fb43a0f449a70',
+            '5677099d06bc72f9da1113afa5e022feec424c8e',
+            '86231b5cdcbfe751b9ddcd4bd981fc0a48afe921',
+            'd6f184944335f26ea59dbb603e38e2d434220fcd',
+            '2ac1a0aecd5c80fb5524348130ab7cf92670470a'
+        ]
+        for (let i = 0; i < 5; i++) {
+            const child = node.derive(i)
+            expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(cry.secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
+        }
+
+        const xprivNode = cry.mnemonic.HDNode.fromPrivateKey(node.privateKey!, node.chainCode)
+        for (let i = 0; i < 5; i++) {
+            const child = xprivNode.derive(i)
+            expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(cry.secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
+        }
+
+        const xpubNode = cry.mnemonic.HDNode.fromPublicKey(node.publicKey, node.chainCode)
+        for (let i = 0; i < 5; i++) {
+            const child = xpubNode.derive(i)
+            expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(child.privateKey).equal(null)
+        }
     })
 })
