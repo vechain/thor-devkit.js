@@ -76,6 +76,27 @@ let recoveredPrivateKey = await cry.Keystore.decrypt(keystore, 'your password')
 
 // roughly check keystore format
 ok = cry.Keystore.wellFormed(keystore)
+
+// create BIP32 HD node from mnemonic words
+let hdnode = cry.HDNode.fromMnemonic(words)
+
+// derive 5 child private keys
+for (let i = 0; i < 5; i++) {
+    let child = hdnode.derive(i)
+    // get child private key
+    // child.privateKey
+}
+
+// or create HD node from xpub
+const pub = Buffer.from('04dc40b4324626eb393dbf77b6930e915dcca6297b42508adb743674a8ad5c69a046010f801a62cb945a6cb137a050cefaba0572429fc4afc57df825bfca2f219a', 'hex')
+const chainCode = Buffer.from('105da5578eb3228655a8abe70bf4c317e525c7f7bb333634f5b7d1f70e111a33', 'hex')
+hdnode = cry.HDNode.fromPublicKey(pub, chainCode)
+// derive 5 child public keys
+for (let i = 0; i < 5; i++) {
+    let child = hdnode.derive(i)
+    // get child public key
+    // child.publicKey
+}
 ```
 
 ### RLP

@@ -137,7 +137,7 @@ describe('mnemonic', () => {
         expect(cry.mnemonic.derivePrivateKey(words).toString('hex')).equal('27196338e7d0b5e7bf1be1c0327c53a244a18ef0b102976980e341500f492425')
     })
     it('hdNode', () => {
-        const node = cry.mnemonic.HDNode.fromMnemonic(words)
+        const node = cry.HDNode.fromMnemonic(words)
         const addresses = [
             '339fb3c438606519e2c75bbf531fb43a0f449a70',
             '5677099d06bc72f9da1113afa5e022feec424c8e',
@@ -148,20 +148,23 @@ describe('mnemonic', () => {
         for (let i = 0; i < 5; i++) {
             const child = node.derive(i)
             expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(child.address).equal('0x' + addresses[i])
             expect(cry.secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
         }
 
-        const xprivNode = cry.mnemonic.HDNode.fromPrivateKey(node.privateKey!, node.chainCode)
+        const xprivNode = cry.HDNode.fromPrivateKey(node.privateKey!, node.chainCode)
         for (let i = 0; i < 5; i++) {
             const child = xprivNode.derive(i)
             expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(child.address).equal('0x' + addresses[i])
             expect(cry.secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
         }
 
-        const xpubNode = cry.mnemonic.HDNode.fromPublicKey(node.publicKey, node.chainCode)
+        const xpubNode = cry.HDNode.fromPublicKey(node.publicKey, node.chainCode)
         for (let i = 0; i < 5; i++) {
             const child = xpubNode.derive(i)
             expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(child.address).equal('0x' + addresses[i])
             expect(child.privateKey).equal(null)
         }
     })
