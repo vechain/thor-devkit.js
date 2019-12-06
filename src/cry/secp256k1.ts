@@ -1,5 +1,5 @@
-import { ec as EC } from 'elliptic'
 import * as randomBytes from 'randombytes'
+import { ec as EC } from 'elliptic'
 
 const curve = new EC('secp256k1')
 
@@ -40,8 +40,8 @@ export namespace secp256k1 {
         const keyPair = curve.keyFromPrivate(privKey)
         const sig = keyPair.sign(msgHash, { canonical: true })
 
-        const r = Buffer.from(sig.r.toArray('be'))
-        const s = Buffer.from(sig.s.toArray('be'))
+        const r = Buffer.from(sig.r.toArray('be', 32))
+        const s = Buffer.from(sig.s.toArray('be', 32))
 
         return Buffer.concat([r, s, Buffer.from([sig.recoveryParam!])])
     }
