@@ -12,10 +12,14 @@ function isValidPrivateKey(key: Buffer) {
 
 /** secp256k1 methods set */
 export namespace secp256k1 {
-    /** generate private key  */
-    export function generatePrivateKey() {
+    /**
+     * generate private key
+     * @param rng the optional random number generator, which exactly generates 32 random bytes
+     */
+    export function generatePrivateKey(rng?: () => Buffer) {
+        rng = rng || (() => randomBytes(32))
         for (; ;) {
-            const privKey = randomBytes(32)
+            const privKey = rng()
             if (isValidPrivateKey(privKey)) {
                 return privKey
             }

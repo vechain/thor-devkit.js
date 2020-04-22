@@ -3,9 +3,14 @@ import { randomBytes } from 'crypto'
 import { HDNode } from './hdnode'
 
 export namespace mnemonic {
-    /** generate BIP39 mnemonic words */
-    export function generate() {
-        return HD.entropyToMnemonic(randomBytes(128 / 8)).split(' ')
+    /**
+     * generate BIP39 mnemonic words
+     * @param rng the optional random number generator, which generates 16~32 (step 4) random bytes.
+     * Every 4 bytes produce 3 words.
+     */
+    export function generate(rng?: () => Buffer) {
+        rng = rng || (() => randomBytes(128 / 8))
+        return HD.entropyToMnemonic(rng()).split(' ')
     }
 
     /**
