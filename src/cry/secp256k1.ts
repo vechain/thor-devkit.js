@@ -3,7 +3,7 @@ import { ec as EC } from 'elliptic'
 
 const curve = new EC('secp256k1')
 
-const N = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141')
+const N = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141', 'hex')
 const ZERO = Buffer.alloc(32, 0)
 
 function isValidPrivateKey(key: Buffer) {
