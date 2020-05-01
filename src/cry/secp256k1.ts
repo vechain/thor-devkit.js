@@ -7,7 +7,14 @@ const N = Buffer.from('fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd
 const ZERO = Buffer.alloc(32, 0)
 
 function isValidPrivateKey(key: Buffer) {
-    return !key.equals(ZERO) && key.compare(N) < 0
+    return Buffer.isBuffer(key) &&
+        key.length === 32 &&
+        !key.equals(ZERO) &&
+        key.compare(N) < 0
+}
+
+function isValidMessageHash(hash: Buffer) {
+    return Buffer.isBuffer(hash) && hash.length === 32
 }
 
 /** secp256k1 methods set */
@@ -31,6 +38,9 @@ export namespace secp256k1 {
      * @param privKey the private key
      */
     export function derivePublicKey(privKey: Buffer) {
+        if (!isValidPrivateKey(privKey)) {
+            throw new Error('invalid private key')
+        }
         const keyPair = curve.keyFromPrivate(privKey)
         return Buffer.from(keyPair.getPublic().encode('array', false) as any)
     }
@@ -41,6 +51,14 @@ export namespace secp256k1 {
      * @param privKey serialized private key
      */
     export function sign(msgHash: Buffer, privKey: Buffer) {
+        if (!isValidMessageHash(msgHash)) {
+            throw new Error('invalid message hash')
+        }
+
+        if (!isValidPrivateKey(privKey)) {
+            throw new Error('invalid private key')
+        }
+
         const keyPair = curve.keyFromPrivate(privKey)
         const sig = keyPair.sign(msgHash, { canonical: true })
 
@@ -56,7 +74,10 @@ export namespace secp256k1 {
      * @param sig signature
      */
     export function recover(msgHash: Buffer, sig: Buffer) {
-        if (sig.length !== 65) {
+        if (!isValidMessageHash(msgHash)) {
+            throw new Error('invalid message hash')
+        }
+        if (!Buffer.isBuffer(sig) || sig.length !== 65) {
             throw new Error('invalid signature')
         }
         const recovery = sig[64]
