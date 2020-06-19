@@ -1,4 +1,4 @@
-const blake = require('blakejs')
+const blake = require('@exodus/blakejs')
 
 /**
  * computes blake2b 256bit hash of given data
