@@ -154,7 +154,7 @@ let body: Transaction.Body = {
 }
 
 let tx = new Transaction(body)
-let signingHash = cry.blake2b256(tx.encode())
+let signingHash = tx.signingHash()
 tx.signature = cry.secp256k1.sign(signingHash, /* your private key */)
 
 let raw = tx.encode()
