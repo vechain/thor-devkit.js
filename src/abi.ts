@@ -12,7 +12,7 @@ class Coder extends AbiCoder {
         })
     }
 
-    public encode(types: string[], values: any[]): string {
+    public encode(types: Array<string|abi.Function.Parameter>, values: any[]): string {
         try {
             return super.encode(types, values)
         } catch (err) {
@@ -23,7 +23,7 @@ class Coder extends AbiCoder {
         }
     }
 
-    public decode(types: string[], data: string): any[] {
+    public decode(types: Array<string|abi.Function.Parameter>, data: string): any[] {
         try {
             return super.decode(types, data)
         } catch (err) {
@@ -78,7 +78,7 @@ export namespace abi {
      * @returns encoded values in hex string
      */
     export function encodeParameters(types: Function.Parameter[], values: any[]) {
-        return coder.encode(types.map(p => p.type), values)
+        return coder.encode(types, values)
     }
 
     /**
@@ -88,7 +88,7 @@ export namespace abi {
      * @returns decoded object
      */
     export function decodeParameters(types: Function.Parameter[], data: string) {
-        const result = coder.decode(types.map(p => p.type), data)
+        const result = coder.decode(types, data)
         const decoded: Decoded = {}
         types.forEach((t, i) => {
             decoded[i] = result[i]
@@ -138,13 +138,15 @@ export namespace abi {
         export interface Parameter {
             name: string
             type: string
+            components?: any[] // Tuples ONLY
+            internalType?: string
         }
 
         export interface Definition {
             type: 'function'
             name: string
             constant?: boolean
-            payable: boolean
+            payable?: boolean
             stateMutability: StateMutability
             inputs: Parameter[]
             outputs: Parameter[]
