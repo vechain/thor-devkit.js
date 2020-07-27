@@ -138,6 +138,19 @@ describe('abi', () => {
         "name": "E4",
         "type": "event"
     })
+
+    const e5 = new abi.Event({
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "a1",
+                "type": "bytes"
+            }
+        ],
+        "name": "E5",
+        "type": "event"
+    })
+
     it('codec', () => {
         expect(abi.encodeParameter('uint256', '2345675643')).equal('0x000000000000000000000000000000000000000000000000000000008bd02b7b')
         expect(() => abi.encodeParameter('bytes32', '0xdf3234')).to.throw()
@@ -234,6 +247,9 @@ describe('abi', () => {
             0: hash,
             a1: hash
         })
+
+        const hexSlice = '0x' + Buffer.from('hello').toString('hex')
+        expect(e5.encode({ a1: hexSlice })).deep.equal([e5.signature, hash])
     })
 
     it('abi v2', () => {
