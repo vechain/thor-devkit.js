@@ -1,6 +1,6 @@
 {
   "name": "thor-devkit",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Typescript library to aid DApp development on VeChain Thor",
   "main": "dist/index.js",
   "module": "esm/index.js",
