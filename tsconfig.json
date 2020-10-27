@@ -5,9 +5,9 @@
     "strict": true,
     "outDir": "./dist",
     "inlineSourceMap": true,
-    "declaration": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   },
   "include": [
     "./src"

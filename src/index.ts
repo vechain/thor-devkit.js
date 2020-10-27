@@ -4,5 +4,4 @@ export * from './rlp'
 export * from './bloom'
 export * from './certificate'
 
-import * as cry from './cry'
-export { cry }
+export * as cry from './cry'
