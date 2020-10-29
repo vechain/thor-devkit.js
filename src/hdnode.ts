@@ -2,7 +2,7 @@ import { Base58 } from '@vechain/ethers/utils/basex'
 import * as HD from '@vechain/ethers/utils/hdnode'
 import { createHash } from 'crypto'
 import { ec as EC } from 'elliptic'
-import { publicKeyToAddress } from './address'
+import { address } from './address'
 
 // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 const VET_DERIVATION_PATH = `m/44'/818'/0'/0`
@@ -57,7 +57,7 @@ export namespace HDNode {
         const pub = Buffer.from(curve.keyFromPublic(ethersNode.publicKey.slice(2), 'hex').getPublic(false, 'array'))
         const priv = ethersNode.privateKey ? Buffer.from(ethersNode.privateKey.slice(2), 'hex') : null
         const cc = Buffer.from(ethersNode.chainCode.slice(2), 'hex')
-        const addr = '0x' + publicKeyToAddress(pub).toString('hex')
+        const addr = address.fromPublicKey(pub)
 
         return {
             get publicKey() {

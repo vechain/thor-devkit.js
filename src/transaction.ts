@@ -1,7 +1,7 @@
-import { publicKeyToAddress } from './cry/address'
-import { blake2b256 } from './cry/blake2b'
-import { secp256k1 } from './cry/secp256k1'
+import { address } from './address'
+import { blake2b256 } from './blake2b'
 import { RLP } from './rlp'
+import { secp256k1 } from './secp256k1'
 
 /** Transaction class defines VeChainThor's multi-clause transaction */
 export class Transaction {
@@ -71,10 +71,10 @@ export class Transaction {
         try {
             const signingHash = this.signingHash()
             const pubKey = secp256k1.recover(signingHash, this.signature!.slice(0, 65))
-            const origin = publicKeyToAddress(pubKey)
+            const origin = address.fromPublicKey(pubKey)
             return '0x' + blake2b256(
                 signingHash,
-                origin,
+                Buffer.from(origin.slice(2), 'hex'),
             ).toString('hex')
         } catch {
             return null
@@ -109,7 +109,7 @@ export class Transaction {
         try {
             const signingHash = this.signingHash()
             const pubKey = secp256k1.recover(signingHash, this.signature!.slice(0, 65))
-            return '0x' + publicKeyToAddress(pubKey).toString('hex')
+            return address.fromPublicKey(pubKey)
         } catch {
             return null
         }
@@ -132,7 +132,7 @@ export class Transaction {
         try {
             const signingHash = this.signingHash(origin)
             const pubKey = secp256k1.recover(signingHash, this.signature!.slice(65))
-            return '0x' + publicKeyToAddress(pubKey).toString('hex')
+            return address.fromPublicKey(pubKey)
         } catch {
             return null
         }

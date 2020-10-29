@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { cry, Transaction } from '../src'
+import { Transaction, blake2b256, secp256k1, address } from '../src'
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
@@ -29,7 +29,7 @@ describe("transaction", () => {
     const unsignedEncoded = Buffer.from('f8540184aabbccdd20f840df947567d83b7b8d80addcb281a71d54fc7b3364ffed82271086000000606060df947567d83b7b8d80addcb281a71d54fc7b3364ffed824e208600000060606081808252088083bc614ec0', 'hex')
 
     it('unsigned', () => {
-        const signingHash = cry.blake2b256(unsigned.encode())
+        const signingHash = blake2b256(unsigned.encode())
         expect(signingHash.toString('hex')).equal('2a1c25ce0d66f45276a5f308b99bf410e2fc7d5b6ea37a49f2ab9f1da9446478')
         expect(unsigned.signingHash().toString('hex')).equal('2a1c25ce0d66f45276a5f308b99bf410e2fc7d5b6ea37a49f2ab9f1da9446478')
 
@@ -76,14 +76,14 @@ describe("transaction", () => {
     const signed = new Transaction(body)
     const signedEncoded = Buffer.from('f8970184aabbccdd20f840df947567d83b7b8d80addcb281a71d54fc7b3364ffed82271086000000606060df947567d83b7b8d80addcb281a71d54fc7b3364ffed824e208600000060606081808252088083bc614ec0b841f76f3c91a834165872aa9464fc55b03a13f46ea8d3b858e528fcceaf371ad6884193c3f313ff8effbb57fe4d1adc13dceb933bedbf9dbb528d2936203d5511df00', 'hex')
     const privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
-    signed.signature = cry.secp256k1.sign(cry.blake2b256(signed.encode()), privKey)
-    const signer = cry.publicKeyToAddress(cry.secp256k1.derivePublicKey(privKey))
+    signed.signature = secp256k1.sign(blake2b256(signed.encode()), privKey)
+    const signer = address.fromPublicKey(secp256k1.derivePublicKey(privKey))
 
     it("signed", () => {
         expect(signed.signature!.toString('hex')).equal('f76f3c91a834165872aa9464fc55b03a13f46ea8d3b858e528fcceaf371ad6884193c3f313ff8effbb57fe4d1adc13dceb933bedbf9dbb528d2936203d5511df00')
-        expect(signed.origin).equal('0x' + signer.toString('hex'))
+        expect(signed.origin).equal(signer)
         expect(signed.id).equal('0xda90eaea52980bc4bb8d40cb2ff84d78433b3b4a6e7d50b75736c5e3e77b71ec')
-        expect(signed.signingHash('0x' + signer.toString('hex')).toString('hex')).equal('da90eaea52980bc4bb8d40cb2ff84d78433b3b4a6e7d50b75736c5e3e77b71ec')
+        expect(signed.signingHash(signer).toString('hex')).equal('da90eaea52980bc4bb8d40cb2ff84d78433b3b4a6e7d50b75736c5e3e77b71ec')
     })
 
     it("encode decode", () => {
@@ -128,22 +128,22 @@ describe("transaction", () => {
         expect(unsigned.delegated).equal(false)
         expect(delegated.delegated).equal(true)
 
-        const priv1 = cry.secp256k1.generatePrivateKey()
-        const priv2 = cry.secp256k1.generatePrivateKey()
-        const addr1 = cry.publicKeyToAddress(cry.secp256k1.derivePublicKey(priv1))
-        const addr2 = cry.publicKeyToAddress(cry.secp256k1.derivePublicKey(priv2))
+        const priv1 = secp256k1.generatePrivateKey()
+        const priv2 = secp256k1.generatePrivateKey()
+        const addr1 = address.fromPublicKey(secp256k1.derivePublicKey(priv1))
+        const addr2 = address.fromPublicKey(secp256k1.derivePublicKey(priv2))
 
         const hash = delegated.signingHash()
-        const dhash = delegated.signingHash('0x' + addr1.toString('hex'))
+        const dhash = delegated.signingHash(addr1)
 
         const sig = Buffer.concat([
-            cry.secp256k1.sign(hash, priv1),
-            cry.secp256k1.sign(dhash, priv2)
+            secp256k1.sign(hash, priv1),
+            secp256k1.sign(dhash, priv2)
         ])
 
         delegated.signature = sig
 
-        expect(delegated.origin).equal('0x' + addr1.toString('hex'))
-        expect(delegated.delegator).equal('0x' + addr2.toString('hex'))
+        expect(delegated.origin).equal(addr1)
+        expect(delegated.delegator).equal(addr2)
     })
 })

@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { cry } from '../src'
+import { blake2b256, keccak256, address, secp256k1, Keystore, mnemonic, HDNode } from '../src'
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
@@ -8,42 +8,42 @@ import { cry } from '../src'
 
 describe('hash', () => {
     it('blake2b256', () => {
-        expect(cry.blake2b256(Buffer.alloc(0)).toString('hex')).equal('0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8')
-        expect(cry.blake2b256('hello world').toString('hex')).equal('256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610')
-        expect(cry.blake2b256('hello', ' world').toString('hex')).equal('256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610')
+        expect(blake2b256(Buffer.alloc(0)).toString('hex')).equal('0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8')
+        expect(blake2b256('hello world').toString('hex')).equal('256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610')
+        expect(blake2b256('hello', ' world').toString('hex')).equal('256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610')
     })
 
     it('keccak', () => {
-        expect(cry.keccak256(Buffer.alloc(0)).toString('hex')).equal('c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470')
-        expect(cry.keccak256('hello world').toString('hex')).equal('47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad')
-        expect(cry.keccak256('hello', ' world').toString('hex')).equal('47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad')
+        expect(keccak256(Buffer.alloc(0)).toString('hex')).equal('c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470')
+        expect(keccak256('hello world').toString('hex')).equal('47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad')
+        expect(keccak256('hello', ' world').toString('hex')).equal('47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad')
     })
 })
 
-describe('isValidAddress', () => {
+describe('address.test', () => {
     it('validate address', () => {
-        expect(cry.isAddress('not an address')).equal(false)
-        expect(cry.isAddress('52908400098527886E0F7030069857D2E4169EE7')).equal(false)
-        expect(cry.isAddress('0x52908400098527886E0F7030069857D2E4169EE7')).equal(true)
+        expect(address.test('not an address')).equal(false)
+        expect(address.test('52908400098527886E0F7030069857D2E4169EE7')).equal(false)
+        expect(address.test('0x52908400098527886E0F7030069857D2E4169EE7')).equal(true)
     })
 })
 
-describe('toChecksumAddress', () => {
+describe('address.toChecksumed', () => {
     it('invalid input should throw error', () => {
-        expect(() => { cry.toChecksumAddress('invalid data') }).to.throw('invalid address')
-        expect(() => { cry.toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7') }).to.throw('invalid address')
+        expect(() => { address.toChecksumed('invalid data') }).to.throw('invalid address')
+        expect(() => { address.toChecksumed('52908400098527886E0F7030069857D2E4169EE7') }).to.throw('invalid address')
     })
 
     it('valid input', () => {
-        expect(cry.toChecksumAddress('0x8617E340B3D01FA5F11F306F4090FD50E238070D')).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
-        expect(cry.toChecksumAddress('0x8617E340B3D01FA5F11F306F4090FD50E238070D'.toLowerCase())).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
-        expect(cry.toChecksumAddress('0xde709f2102306220921060314715629080e2fb77')).equal('0xde709f2102306220921060314715629080e2fb77')
-        expect(cry.toChecksumAddress('0xde709f2102306220921060314715629080e2fb77'.toLowerCase())).equal('0xde709f2102306220921060314715629080e2fb77')
-        expect(cry.toChecksumAddress('0x27b1fdb04752bbc536007a920d24acb045561c26')).equal('0x27b1fdb04752bbc536007a920d24acb045561c26')
-        expect(cry.toChecksumAddress('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')).equal('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
-        expect(cry.toChecksumAddress('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')).equal('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')
-        expect(cry.toChecksumAddress('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')).equal('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')
-        expect(cry.toChecksumAddress('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')).equal('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')
+        expect(address.toChecksumed('0x8617E340B3D01FA5F11F306F4090FD50E238070D')).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
+        expect(address.toChecksumed('0x8617E340B3D01FA5F11F306F4090FD50E238070D'.toLowerCase())).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
+        expect(address.toChecksumed('0xde709f2102306220921060314715629080e2fb77')).equal('0xde709f2102306220921060314715629080e2fb77')
+        expect(address.toChecksumed('0xde709f2102306220921060314715629080e2fb77'.toLowerCase())).equal('0xde709f2102306220921060314715629080e2fb77')
+        expect(address.toChecksumed('0x27b1fdb04752bbc536007a920d24acb045561c26')).equal('0x27b1fdb04752bbc536007a920d24acb045561c26')
+        expect(address.toChecksumed('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')).equal('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
+        expect(address.toChecksumed('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')).equal('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')
+        expect(address.toChecksumed('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')).equal('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')
+        expect(address.toChecksumed('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')).equal('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')
     })
 })
 
@@ -51,36 +51,36 @@ describe('secp256k1', () => {
     const privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
     const pubKey = Buffer.from('04b90e9bb2617387eba4502c730de65a33878ef384a46f1096d86f2da19043304afa67d0ad09cf2bea0c6f2d1767a9e62a7a7ecc41facf18f2fa505d92243a658f', 'hex')
     const addr = '0xd989829d88b0ed1b06edf5c50174ecfa64f14a64'
-    const msgHash = cry.keccak256('hello world')
+    const msgHash = keccak256('hello world')
     const sig = Buffer.from('f8fe82c74f9e1f5bf443f8a7f8eb968140f554968fdcab0a6ffe904e451c8b9244be44bccb1feb34dd20d9d8943f8c131227e55861736907b02d32c06b934d7200', 'hex')
 
     it('derive', () => {
-        expect(cry.secp256k1.derivePublicKey(privKey)).deep.equal(pubKey)
-        expect('0x' + cry.publicKeyToAddress(pubKey).toString('hex')).deep.equal(addr)
+        expect(secp256k1.derivePublicKey(privKey)).deep.equal(pubKey)
+        expect(address.fromPublicKey(pubKey)).deep.equal(addr)
     })
     it('sign/recover', () => {
-        expect(cry.secp256k1.sign(msgHash, privKey)).deep.equal(sig)
-        expect(cry.secp256k1.recover(msgHash, sig)).deep.equal(pubKey)
+        expect(secp256k1.sign(msgHash, privKey)).deep.equal(sig)
+        expect(secp256k1.recover(msgHash, sig)).deep.equal(pubKey)
     })
 })
 
 describe('keystore', () => {
-    const privKey = cry.secp256k1.generatePrivateKey()
+    const privKey = secp256k1.generatePrivateKey()
 
     it('encrypt', async () => {
-        const ks = await cry.Keystore.encrypt(privKey, '123')
+        const ks = await Keystore.encrypt(privKey, '123')
         expect(ks.version).equal(3)
-        expect(ks.address).equal(cry.publicKeyToAddress(cry.secp256k1.derivePublicKey(privKey)).toString('hex'))
+        expect(ks.address).equal(address.fromPublicKey(secp256k1.derivePublicKey(privKey)).slice(2))
     })
 
     it('decrypt', async () => {
-        const ks = await cry.Keystore.encrypt(privKey, '123')
-        const dprivKey = await cry.Keystore.decrypt(ks, '123')
+        const ks = await Keystore.encrypt(privKey, '123')
+        const dprivKey = await Keystore.decrypt(ks, '123')
         expect(dprivKey).deep.equal(privKey)
 
         let fail
         try {
-            await cry.Keystore.decrypt(ks, 'wrong pass')
+            await Keystore.decrypt(ks, 'wrong pass')
             fail = false
         } catch {
             fail = true
@@ -89,37 +89,37 @@ describe('keystore', () => {
     })
 
     it('validate', async () => {
-        const ks = await cry.Keystore.encrypt(privKey, '123')
-        expect(cry.Keystore.wellFormed(ks)).equal(true)
+        const ks = await Keystore.encrypt(privKey, '123')
+        expect(Keystore.wellFormed(ks)).equal(true)
 
         let cpy = { ...ks, version: 0 }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
+        expect(Keystore.wellFormed(cpy)).equal(false)
 
         cpy = { ...ks, address: 'not an address' }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
+        expect(Keystore.wellFormed(cpy)).equal(false)
 
         cpy = { ...ks, id: 'not an id' }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
+        expect(Keystore.wellFormed(cpy)).equal(false)
 
         cpy = { ...ks, crypto: 'not an object' as any }
-        expect(cry.Keystore.wellFormed(cpy)).equal(false)
+        expect(Keystore.wellFormed(cpy)).equal(false)
 
         cpy = { ...ks };
         // tslint:disable-next-line:no-string-literal
         (cpy as any)['Crypto'] = cpy.crypto
         delete cpy.crypto
-        expect(cry.Keystore.wellFormed(cpy)).equal(true)
+        expect(Keystore.wellFormed(cpy)).equal(true)
 
         cpy = { ...ks };
         // tslint:disable-next-line:no-string-literal
         (cpy.crypto as any)['Cipher'] = (cpy.crypto as any)['cipher']
         // tslint:disable-next-line:no-string-literal
         delete (cpy.crypto as any)['cipher']
-        expect(cry.Keystore.wellFormed(cpy)).equal(true)
+        expect(Keystore.wellFormed(cpy)).equal(true)
 
         cpy = { ...ks }
         cpy.id = cpy.id.toUpperCase()
-        expect(cry.Keystore.wellFormed(cpy)).equal(true)
+        expect(Keystore.wellFormed(cpy)).equal(true)
     })
 })
 
@@ -127,17 +127,17 @@ describe('mnemonic', () => {
     const words = 'ignore empty bird silly journey junior ripple have guard waste between tenant'.split(' ')
 
     it('generate', () => {
-        expect(cry.mnemonic.generate().length).equal(12)
+        expect(mnemonic.generate().length).equal(12)
     })
     it('validate', () => {
-        expect(cry.mnemonic.validate(['hello', 'world'])).equal(false)
-        expect(cry.mnemonic.validate(cry.mnemonic.generate())).equal(true)
+        expect(mnemonic.validate(['hello', 'world'])).equal(false)
+        expect(mnemonic.validate(mnemonic.generate())).equal(true)
     })
     it('derive', () => {
-        expect(cry.mnemonic.derivePrivateKey(words).toString('hex')).equal('27196338e7d0b5e7bf1be1c0327c53a244a18ef0b102976980e341500f492425')
+        expect(mnemonic.derivePrivateKey(words).toString('hex')).equal('27196338e7d0b5e7bf1be1c0327c53a244a18ef0b102976980e341500f492425')
     })
     it('hdNode', () => {
-        const node = cry.HDNode.fromMnemonic(words)
+        const node = HDNode.fromMnemonic(words)
         const addresses = [
             '339fb3c438606519e2c75bbf531fb43a0f449a70',
             '5677099d06bc72f9da1113afa5e022feec424c8e',
@@ -147,23 +147,23 @@ describe('mnemonic', () => {
         ]
         for (let i = 0; i < 5; i++) {
             const child = node.derive(i)
-            expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(address.fromPublicKey(child.publicKey).slice(2)).equal(addresses[i])
             expect(child.address).equal('0x' + addresses[i])
-            expect(cry.secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
+            expect(secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
         }
 
-        const xprivNode = cry.HDNode.fromPrivateKey(node.privateKey!, node.chainCode)
+        const xprivNode = HDNode.fromPrivateKey(node.privateKey!, node.chainCode)
         for (let i = 0; i < 5; i++) {
             const child = xprivNode.derive(i)
-            expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(address.fromPublicKey(child.publicKey).slice(2)).equal(addresses[i])
             expect(child.address).equal('0x' + addresses[i])
-            expect(cry.secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
+            expect(secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
         }
 
-        const xpubNode = cry.HDNode.fromPublicKey(node.publicKey, node.chainCode)
+        const xpubNode = HDNode.fromPublicKey(node.publicKey, node.chainCode)
         for (let i = 0; i < 5; i++) {
             const child = xpubNode.derive(i)
-            expect(cry.publicKeyToAddress(child.publicKey).toString('hex')).equal(addresses[i])
+            expect(address.fromPublicKey(child.publicKey).slice(2)).equal(addresses[i])
             expect(child.address).equal('0x' + addresses[i])
             expect(child.privateKey).equal(null)
         }

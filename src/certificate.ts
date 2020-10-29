@@ -1,6 +1,6 @@
-import { publicKeyToAddress } from './cry/address'
-import { blake2b256 } from './cry/blake2b'
-import { secp256k1 } from './cry/secp256k1'
+import { address } from './address'
+import { blake2b256 } from './blake2b'
+import { secp256k1 } from './secp256k1'
 
 const fastJsonStableStringify = require('fast-json-stable-stringify')
 
@@ -55,7 +55,7 @@ export namespace Certificate {
 
         const pubKey = secp256k1.recover(signingHash, Buffer.from(signature.slice(2), 'hex'))
 
-        if ('0x' + publicKeyToAddress(pubKey).toString('hex') !== safeToLowerCase(cert.signer)) {
+        if (address.fromPublicKey(pubKey) !== safeToLowerCase(cert.signer)) {
             throw new Error('signature does not match with signer')
         }
     }
