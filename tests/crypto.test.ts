@@ -167,5 +167,9 @@ describe('mnemonic', () => {
             expect(child.address).equal('0x' + addresses[i])
             expect(child.privateKey).equal(null)
         }
+
+        // non-lowercase
+        const node2 = HDNode.fromMnemonic(words.map(w => w.toUpperCase()))
+        expect(node.address === node2.address)
     })
 })
