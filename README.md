@@ -21,14 +21,14 @@ to build and sign a transaction
 ```javascript
 import { Transaction, secp256k1 } from 'thor-devkit'
 
-let clauses =  [{
+const clauses =  [{
     to: '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed',
     value: 10000,
     data: '0x'
 }]
 
 // calc intrinsic gas
-let gas = Transaction.intrinsicGas(clauses)
+const gas = Transaction.intrinsicGas(clauses)
 console.log(gas)
 // 21000
 
@@ -38,17 +38,17 @@ let body: Transaction.Body = {
     expiration: 32,
     clauses: clauses,
     gasPriceCoef: 128,
-    gas: 21000,
+    gas,
     dependsOn: null,
     nonce: 12345678
 }
 
-let tx = new Transaction(body)
-let signingHash = tx.signingHash()
+const tx = new Transaction(body)
+const signingHash = tx.signingHash()
 tx.signature = secp256k1.sign(signingHash, /* your private key */)
 
-let raw = tx.encode()
-let decoded = Transaction.decode(raw)
+const raw = tx.encode()
+const decoded = Transaction.decode(raw)
 ```
 
 ### Certificate
@@ -58,7 +58,7 @@ client side self-signed certificate
 ```javascript
 import { Certificate, secp256k1, blake2b256 } from 'thor-devkit'
 
-let cert: Certificate = {
+const cert: Certificate = {
     purpose: 'identification',
     payload: {
         type: 'text',
@@ -69,15 +69,15 @@ let cert: Certificate = {
     signer: <<<signer-address>>>
 }
 
-let jsonStr = Certificate.encode(cert)
-let signature = secp256k1.sign(blake2b256(jsonStr), <<<private-key>>>)
+const jsonStr = Certificate.encode(cert)
+const signature = secp256k1.sign(blake2b256(jsonStr), <<<private-key>>>)
 
 cert.signature = '0x' + signature.toString('hex')
 
 Certificate.verify(cert)
 
 // certificate id
-let id = '0x' + blake2b256(Certificate.encode(cert)).toString('hex')
+const id = '0x' + blake2b256(Certificate.encode(cert)).toString('hex')
 ```
 
 ### ABI
@@ -85,7 +85,7 @@ let id = '0x' + blake2b256(Certificate.encode(cert)).toString('hex')
 ```javascript
 import { abi } from 'thor-devkit'
 
-let fn = new abi.Function({
+const fn = new abi.Function({
     "constant": false,
     "inputs": [
         {
@@ -113,7 +113,7 @@ let fn = new abi.Function({
     "type": "function"
 })
 
-let data = fn.encode(1, 'foo')
+const data = fn.encode(1, 'foo')
 ```
 
 ### RLP
@@ -122,7 +122,7 @@ let data = fn.encode(1, 'foo')
 import { RLP } from 'thor-devkit'
 
 // define the profile for tx clause structure
-let profile: RLP.Profile = {
+const profile: RLP.Profile = {
     name: 'clause',
     kind: [
         { name: 'to', kind: new RLP.NullableFixedBlobKind(20) },
@@ -131,19 +131,19 @@ let profile: RLP.Profile = {
     ]
 }
 
-let clause = {
+const clause = {
     to: '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed',
     value: 10,
     data: '0x'
 }
 
-let rlp = new RLP(profile)
+const rlp = new RLP(profile)
 
-let data = rlp.encode(clause)
+const data = rlp.encode(clause)
 console.log(data.toString('hex'))
 // d7947567d83b7b8d80addcb281a71d54fc7b3364ffed0a80
 
-let obj = rlp.decode(data)
+const obj = rlp.decode(data)
 // `obj` should be identical to `clause`
 ```
 
@@ -154,7 +154,7 @@ let obj = rlp.decode(data)
 ```javascript
 import { blake2b256, keccak256 } from 'thor-devkit'
 
-let hash = blake2b256('hello world')
+const hash = blake2b256('hello world')
 console.log(hash.toString('hex'))
 // 256c83b297114d201b30179f3f0ef0cace9783622da5974326b436178aeef610
 
@@ -168,11 +168,11 @@ console.log(hash.toString('hex'))
 ```javascript
 import { secp256k1, keccak256, address } from 'thor-devkit'
 
-let privKey = secp256k1.generatePrivateKey()
-let pubKey = secp256k1.derivePublicKey(privKey)
-let addr = address.fromPublicKey(pubKey)
-let signature = secp256k1.sign(keccak256('hello world'), privKey)
-let recoveredPubKey = secp256k1.recover(keccak256('hello world'), signature)
+const privKey = secp256k1.generatePrivateKey()
+const pubKey = secp256k1.derivePublicKey(privKey)
+const addr = address.fromPublicKey(pubKey)
+const signature = secp256k1.sign(keccak256('hello world'), privKey)
+const recoveredPubKey = secp256k1.recover(keccak256('hello world'), signature)
 ```
 
 #### Mnemonic & Keystore
@@ -181,26 +181,26 @@ let recoveredPubKey = secp256k1.recover(keccak256('hello world'), signature)
 import { mnemonic, Keystore, HDNode } from 'thor-devkit'
 
 // generate BIP39 mnemonic words, default to 12 words(128bit strength)
-let words = mnemonic.generate()
+const words = mnemonic.generate()
 
 // derive private key from mnemonic words according to BIP32, using the path `m/44'/818'/0'/0`.
 // defined for VET at https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-let privateKey = mnemonic.derivePrivateKey(words)
+const privateKey = mnemonic.derivePrivateKey(words)
 
 // in recovery process, validation is recommended
 let ok = mnemonic.validate(words)
 
 // encrypt/decrypt private key using Ethereum's keystore scheme
-let keystore = await Keystore.encrypt(privateKey, 'your password')
+const keystore = await Keystore.encrypt(privateKey, 'your password')
 
 // throw for wrong password
-let recoveredPrivateKey = await Keystore.decrypt(keystore, 'your password')
+const recoveredPrivateKey = await Keystore.decrypt(keystore, 'your password')
 
 // roughly check keystore format
 ok = Keystore.wellFormed(keystore)
 
 // create BIP32 HD node from mnemonic words
-let hdnode = HDNode.fromMnemonic(words)
+const hdnode = HDNode.fromMnemonic(words)
 
 // derive 5 child private keys
 for (let i = 0; i < 5; i++) {
