@@ -40,6 +40,8 @@ const coder = new Coder()
 function formatSignature(fragment: any) {
     try {
         return _formatSignature(fragment)
+            .replace(/\(tuple\(/g, '((')
+            .replace(/\,tuple\(/g, ',(')
     } catch (err) {
         if (err.reason) {
             throw new Error(err.reason)
