@@ -187,18 +187,18 @@ export namespace abi {
                     topics.push(null)
                 } else {
                     let topic
-                    if (isDynamicType(input.type)) {
+                    // https://docs.soliditylang.org/en/v0.8.11/abi-spec.html#encoding-of-indexed-event-parameters
+                    if (isValueType(input.type)) {
+                        topic = encodeParameter(input.type, value)
+                    } else {
                         if (input.type === 'string') {
                             topic = '0x' + keccak256(value).toString('hex')
+                        } else if (typeof value === 'string' && /^0x[0-9a-f]+$/i.test(value) && value.length % 2 === 0) {
+                            // value is encoded
+                            topic = '0x' + keccak256(Buffer.from(value.slice(2), 'hex')).toString('hex')
                         } else {
-                            if (typeof value === 'string' && /^0x[0-9a-f]+$/i.test(value) && value.length % 2 === 0) {
-                                topic = '0x' + keccak256(Buffer.from(value.slice(2), 'hex')).toString('hex')
-                            } else {
-                                throw new Error(`invalid ${input.type} value`)
-                            }
+                            throw new Error(`event.encode: invalid ${input.type} value`)
                         }
-                    } else {
-                        topic = encodeParameter(input.type, value)
                     }
                     topics.push(topic)
                 }
@@ -227,8 +227,7 @@ export namespace abi {
             this.definition.inputs.forEach((t, i) => {
                 if (t.indexed) {
                     const topic = topics.shift()!
-                    decoded[i] = isDynamicType(t.type) ?
-                        topic : decodeParameter(t.type, topic)
+                    decoded[i] = isValueType(t.type) ? decodeParameter(t.type, topic) : topic 
                 } else {
                     decoded[i] = decodedNonIndexed.shift()
                 }
@@ -257,7 +256,7 @@ export namespace abi {
 
     export type Decoded = { [name: string]: any } & { [index: number]: any }
 
-    function isDynamicType(type: string) {
-        return type === 'bytes' || type === 'string' || type.endsWith('[]')
+    function isValueType(type: string) {
+        return type === 'address' || type === 'bool' || /^(u?int)([0-9]*)$/.test(type) || /^bytes([0-9]+)$/.test(type)
     }
 }
