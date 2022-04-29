@@ -221,8 +221,8 @@ export namespace abi {
             }
 
             const decodedNonIndexed = coder.decode(
-                this.definition.inputs.filter(t => !t.indexed).map(t => t.type), data)
-
+                this.definition.inputs.filter(t => !t.indexed), data)
+            
             const decoded: Decoded = {}
             this.definition.inputs.forEach((t, i) => {
                 if (t.indexed) {
@@ -244,6 +244,8 @@ export namespace abi {
             name: string
             type: string
             indexed: boolean
+            components?: any[] // Tuples ONLY
+            internalType?: string
         }
 
         export interface Definition {
