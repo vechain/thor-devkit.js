@@ -10,9 +10,17 @@ import { keccak256 } from '../src'
 describe('abi', () => {
 
     // contract Foo {
+    //     struct Candidate {
+    //         address master;
+    //         address endorsor;
+    //         bytes32 identity;
+    //         bool active;
+    //     }
     //     function f1(uint a1, string a2) public returns(address r1, bytes r2);
+    //     function nodes() external returns (AuthorityUtils.Candidate[] memory list);
     //     event E1(uint indexed a1, string a2);
     //     event E2(uint indexed a1, string a2) anonymous;
+    //     event Added(AuthorityUtils.Candidate[] nodes)
     // }
     const f1 = new abi.Function({
         "constant": false,
@@ -151,6 +159,43 @@ describe('abi', () => {
         "type": "event"
     })
 
+    const e6 = new abi.Event({
+        "anonymous": false,
+        "inputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address",
+                        "name": "master",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "address",
+                        "name": "endorsor",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "identity",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "active",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct AuthorityUtils.Candidate[]",
+                "name": "nodes",
+                "indexed": false,
+                "type": "tuple[]"
+            }
+        ],
+        "name": "Added",
+        "type": "event"
+    })
+
+
     it('codec', () => {
         expect(abi.encodeParameter('uint256', '2345675643')).equal('0x000000000000000000000000000000000000000000000000000000008bd02b7b')
         expect(() => abi.encodeParameter('bytes32', '0xdf3234')).to.throw()
@@ -252,7 +297,7 @@ describe('abi', () => {
         expect(e5.encode({ a1: hexSlice })).deep.equal([e5.signature, hash])
     })
 
-    it('abi v2', () => {
+    it('v2: Function', () => {
         const output = '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000060000000000000000000000006935455ef590eb8746f5230981d09d3552398018000000000000000000000000b5358b034647202d0cd3d1bf615e63e498e0268249984a53f9397370079bba8d95f5c15c743098fb318483e0cb6bbf46ec89ccfb00000000000000000000000000000000000000000000000000000000000000000000000000000000000000005ff66ee3a3ea2aba2857ea8276edb6190d9a1661000000000000000000000000d51666c6b4fed6070a78691f1f3c8e79ad02e3a076f090d383f49d8faab2eb151241528a552f0ae645f460360a7635b8883987a60000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c5a02c1eac7516a9275d86c1cb39a5262b8684a4000000000000000000000000e32499b4143830f2526c79d388ecee530b6357aac635894a50ce5c74c62d238dbe95bd6a0fa076029d913d76b0d0b111c538153f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e8fd586e022f825a109848832d7e552132bc332000000000000000000000000224626926a7a12225a60e127cec119c939db4a5cdbf2712e19af00dc4d376728f7cb06cc215c8e7c53b94cb47cefb4a26ada2a6c0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ea2e8c9d6dcad9e4be4f1c88a3befb8ea742832e0000000000000000000000001a011475baa1d368fa2d8328a1b7a8d848b62c94c68dc811199d40ff7ecd8c8d46454ad9ac5f5cde9bae32f927fec10d82dbdf7800000000000000000000000000000000000000000000000000000000000000000000000000000000000000004977d68df97bb313b23238520580d8d3a59939bf0000000000000000000000007ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff83b137cf7e30864b8a4e56453eb1f094b4434685d86895de38ac2edcf5d3f5340000000000000000000000000000000000000000000000000000000000000000'
         const decoded = f2.decode(output)
 
@@ -282,6 +327,35 @@ describe('abi', () => {
             expect(v.endorsor).to.be.equal(data[i].endorsor)
             expect(v.identity).to.be.equal(data[i].identity)
             expect(v.active).to.be.equal(data[i].active)
+        })
+    })
+
+    it('v2: Event', () => {
+        const topics = ['0x89b19f9905f19fb787b35eea8cf62662541b8a6b6c058e08c3b04bde17f2c8fb']
+        const data = '0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000e8fd586e022f825a109848832d7e552132bc332000000000000000000000000224626926a7a12225a60e127cec119c939db4a5cdbf2712e19af00dc4d376728f7cb06cc215c8e7c53b94cb47cefb4a26ada2a6c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000004977d68df97bb313b23238520580d8d3a59939bf0000000000000000000000007ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff83b137cf7e30864b8a4e56453eb1f094b4434685d86895de38ac2edcf5d3f5340000000000000000000000000000000000000000000000000000000000000000'
+        
+        const decoded = e6.decode(data,topics)
+
+        expect(decoded).to.haveOwnProperty('nodes')
+        expect(decoded.nodes.length).to.equal(2)
+
+        const nodes = [{
+            master: '0x0e8fd586e022f825a109848832d7e552132bc332',
+            endorsor: '0x224626926a7a12225a60e127cec119c939db4a5c',
+            identity: '0xdbf2712e19af00dc4d376728f7cb06cc215c8e7c53b94cb47cefb4a26ada2a6c',
+            active: false
+        }, {
+            master: '0x4977d68df97bb313b23238520580d8d3a59939bf',
+            endorsor: '0x7ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff',
+            identity: '0x83b137cf7e30864b8a4e56453eb1f094b4434685d86895de38ac2edcf5d3f534',
+            active: false
+        }]
+
+        decoded.nodes.forEach((v:any, i:number) => {
+            expect(v.master).to.be.equal(nodes[i].master)
+            expect(v.endorsor).to.be.equal(nodes[i].endorsor)
+            expect(v.identity).to.be.equal(nodes[i].identity)
+            expect(v.active).to.be.equal(nodes[i].active)
         })
     })
 })
