@@ -7,6 +7,7 @@
     "inlineSourceMap": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "skipLibCheck": true
   },
   "include": [
