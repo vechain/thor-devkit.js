@@ -1,8 +1,7 @@
 import { address } from './address'
 import { blake2b256 } from './blake2b'
 import { secp256k1 } from './secp256k1'
-
-const fastJsonStableStringify = require('fast-json-stable-stringify')
+import fastJsonStableStringify from 'fast-json-stable-stringify'
 
 /**
  * Client side self-signed certificate
