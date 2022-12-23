@@ -1,4 +1,5 @@
 import { keccak_256 } from 'js-sha3'
+import { Buffer } from 'buffer'
 /**
  * computes keccak256 hash of given data
  * @param data one or more Buffer | string

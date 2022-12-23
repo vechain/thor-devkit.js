@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js'
 import * as rlp from 'rlp'
+import { Buffer } from 'buffer'
 
 export class RLP {
     constructor(readonly profile: RLP.Profile) { }

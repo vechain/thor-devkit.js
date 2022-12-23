@@ -1,4 +1,5 @@
 import  blake from 'blakejs'
+import { Buffer } from 'buffer'
 
 /**
  * computes blake2b 256bit hash of given data

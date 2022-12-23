@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto'
 import { ec as EC } from 'elliptic'
+import { Buffer } from 'buffer'
 
 const curve = new EC('secp256k1')
 

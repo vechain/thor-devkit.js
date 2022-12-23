@@ -1,4 +1,5 @@
 import { blake2b256 } from './blake2b'
+import { Buffer } from 'buffer'
 
 /**
  * 2048 bits Bloom filter
