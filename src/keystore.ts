@@ -1,4 +1,5 @@
 import * as SecretStorage from '@vechain/ethers/utils/secret-storage'
+import { Buffer } from 'buffer'
 
 /** to present encrypted private key in Ethereum keystore format. */
 export interface Keystore {

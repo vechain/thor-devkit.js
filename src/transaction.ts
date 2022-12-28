@@ -2,6 +2,7 @@ import { address } from './address'
 import { blake2b256 } from './blake2b'
 import { RLP } from './rlp'
 import { secp256k1 } from './secp256k1'
+import { Buffer } from 'buffer'
 
 /** Transaction class defines VeChainThor's multi-clause transaction */
 export class Transaction {

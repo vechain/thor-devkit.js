@@ -2,6 +2,7 @@ import { address } from './address'
 import { blake2b256 } from './blake2b'
 import { secp256k1 } from './secp256k1'
 import fastJsonStableStringify from 'fast-json-stable-stringify'
+import { Buffer } from 'buffer'
 
 /**
  * Client side self-signed certificate

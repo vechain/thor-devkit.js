@@ -3,6 +3,7 @@ import * as HD from '@vechain/ethers/utils/hdnode'
 import { createHash } from 'crypto'
 import { ec as EC } from 'elliptic'
 import { address } from './address'
+import { Buffer } from 'buffer'
 
 // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 const VET_DERIVATION_PATH = `m/44'/818'/0'/0`
