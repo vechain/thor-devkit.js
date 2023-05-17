@@ -172,4 +172,23 @@ describe('mnemonic', () => {
         const node2 = HDNode.fromMnemonic(words.map(w => w.toUpperCase()))
         expect(node.address === node2.address)
     })
+
+    it('hdNode custom path', () => {
+        const eth_path = `m/44'/60'/0'/0`
+        const node = HDNode.fromMnemonic(words, eth_path)
+        // test case generated via https://iancoleman.io/bip39/
+        const addresses = [
+            '4473c83a6a9661ab9cdb6b07749998ad9e77a580',
+            '858531457566df8b60cf1355b54e48e04e36be33',
+            '40b5aa8b54aafaf6323b58ce5737ce320d92cf99',
+            '988f3af24dca0a3080f9ab5a1f57d706c6b8f011',
+            'ffb0e35ba82856f8f5b7a57104c38a73f3ceff03'
+        ]
+        for (let i = 0; i < 5; i++) {
+            const child = node.derive(i)
+            expect(address.fromPublicKey(child.publicKey).slice(2)).equal(addresses[i])
+            expect(child.address).equal('0x' + addresses[i])
+            expect(secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
+        }
+    })
 })
