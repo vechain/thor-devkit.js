@@ -22,10 +22,10 @@ export interface HDNode {
 
 export namespace HDNode {
     /** create node from mnemonic words */
-    export function fromMnemonic(words: string[]) {
+    export function fromMnemonic(words: string[], path=VET_DERIVATION_PATH) {
         // normalize words to lowercase
         const joinedWords = words.join(' ').toLowerCase()
-        const node = HD.fromMnemonic(joinedWords).derivePath(VET_DERIVATION_PATH)
+        const node = HD.fromMnemonic(joinedWords).derivePath(path)
         return createHDNode(node)
     }
 
