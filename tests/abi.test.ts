@@ -220,7 +220,7 @@ describe('abi', () => {
         expect(() => abi.encodeParameter('WRONG', 10)).to.throw()
         
         // Exception on decoding
-        expect(abi.decodeParameter('uint256', 'WRONG_UINT').to.throw())
+        expect(() => abi.decodeParameter('uint256', 'WRONG_UINT')).to.throw(Error, "invalid hexidecimal string")
     })
 
     it('function', () => {
@@ -331,7 +331,7 @@ describe('abi', () => {
         expect(e5.encode({ a1: hexSlice })).deep.equal([e5.signature, hash])
 
         // Wrong encoding of event hex format
-        expect(e5.encode({ a1: "WRONG_HEX_FORMAT" })).to.throw()
+        expect(() => e5.encode({ a1: "WRONG_HEX_FORMAT" })).to.throw(Error, "event.encode: invalid bytes value")
     })
 
     it('v2: Function', () => {
