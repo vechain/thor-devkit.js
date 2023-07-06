@@ -213,6 +213,16 @@ describe('abi', () => {
 
     })
 
+    it('codec errors', () => {
+        // Exception on encoding
+        expect(() => abi.encodeParameter('bytes32', '0xdf3234')).to.throw()
+        // @ts-ignore
+        expect(() => abi.encodeParameter('WRONG', 10)).to.throw()
+        
+        // Exception on decoding
+        expect(abi.decodeParameter('uint256', 'WRONG_UINT').to.throw())
+    })
+
     it('function', () => {
         expect(f1.signature).equal('0x27fcbb2f')
         expect(f1.encode(1, 'foo')).equal('0x27fcbb2f000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000')
@@ -222,6 +232,30 @@ describe('abi', () => {
             r1: '0xabc0000000000000000000000000000000000001',
             r2: '0x666f6f'
         })
+
+        // Wrong definition of function (wrong formatSignature)
+        expect(() => {
+            // @ts-ignore
+            new abi.Function({
+                "constant": false,
+                // @ts-ignore
+                "inputs": "WRONG_FORMAT",
+                "name": "f1",
+                "outputs": [
+                    {
+                        "name": "r1",
+                        "type": "address"
+                    },
+                    {
+                        "name": "r2",
+                        "type": "bytes"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            })
+        }).to.throw()
     })
 
     it('event', () => {
@@ -295,6 +329,9 @@ describe('abi', () => {
 
         const hexSlice = '0x' + Buffer.from('hello').toString('hex')
         expect(e5.encode({ a1: hexSlice })).deep.equal([e5.signature, hash])
+
+        // Wrong encoding of event hex format
+        expect(e5.encode({ a1: "WRONG_HEX_FORMAT" })).to.throw()
     })
 
     it('v2: Function', () => {
