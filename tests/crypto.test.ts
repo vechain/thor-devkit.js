@@ -53,14 +53,31 @@ describe('secp256k1', () => {
     const addr = '0xd989829d88b0ed1b06edf5c50174ecfa64f14a64'
     const msgHash = keccak256('hello world')
     const sig = Buffer.from('f8fe82c74f9e1f5bf443f8a7f8eb968140f554968fdcab0a6ffe904e451c8b9244be44bccb1feb34dd20d9d8943f8c131227e55861736907b02d32c06b934d7200', 'hex')
+    
+    const invalidPrivateKey = Buffer.from('INVALID_PRIVATE_KEY', 'hex')
+    const invalidMessageHash = Buffer.from('INVALID_MESSAGE_HASH', 'hex')
+    const invalidSignature = Buffer.from('INVALID_SIGNATURE', 'hex')
+    const validSignatureWithWrongRecovery = Buffer.from('f8fe82c74f9e1f5bf443f8a7f8eb968140f554968fdcab0a6ffe904e451c8b9244be44bccb1feb34dd20d9d8943f8c131227e55861736907b02d32c06b934d72FF', 'hex')
 
     it('derive', () => {
         expect(secp256k1.derivePublicKey(privKey)).deep.equal(pubKey)
         expect(address.fromPublicKey(pubKey)).deep.equal(addr)
+
+        // Invalid private key to derive public key
+        expect(() => secp256k1.derivePublicKey(invalidPrivateKey)).to.throw(Error, 'invalid private key')
     })
     it('sign/recover', () => {
         expect(secp256k1.sign(msgHash, privKey)).deep.equal(sig)
         expect(secp256k1.recover(msgHash, sig)).deep.equal(pubKey)
+
+        // Sign with invalid private key AND invalid message hash
+        expect(() => secp256k1.sign(msgHash, invalidPrivateKey)).to.throw(Error, 'invalid private key')
+        expect(() => secp256k1.sign(invalidMessageHash, privKey)).to.throw(Error, 'invalid message hash')
+
+        // Recover with invalid message hash AND invalid signature AND invalid signature recovery
+        expect(() => secp256k1.recover(invalidMessageHash, sig)).to.throw(Error, 'invalid message hash')
+        expect(() => secp256k1.recover(msgHash, invalidSignature)).to.throw(Error, 'invalid signature')
+        expect(() => secp256k1.recover(msgHash, validSignatureWithWrongRecovery)).to.throw(Error, 'invalid signature recovery')
     })
 })
 
