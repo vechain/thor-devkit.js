@@ -32,6 +32,24 @@ describe("transaction", () => {
     const unsigned = new Transaction(correctTransactionBody)
     const unsignedEncoded = Buffer.from('f8540184aabbccdd20f840df947567d83b7b8d80addcb281a71d54fc7b3364ffed82271086000000606060df947567d83b7b8d80addcb281a71d54fc7b3364ffed824e208600000060606081808252088083bc614ec0', 'hex')
 
+    // Delegated transaction
+    const delegated = new Transaction({
+        ...correctTransactionBody,
+        reserved: {
+            features: 1
+        }
+    })
+
+    // Incorrectly delegated transaction
+    const incorrectlyDelegated = new Transaction({
+        ...correctTransactionBody,
+        // Invalid features field
+        reserved: {
+            features: 1,
+            unused: [Buffer.from('0x00', 'hex'), Buffer.from('0x00', 'hex')]
+        }
+    })
+
     it('unsigned', () => {
         const signingHash = blake2b256(unsigned.encode())
         expect(signingHash.toString('hex')).equal('2a1c25ce0d66f45276a5f308b99bf410e2fc7d5b6ea37a49f2ab9f1da9446478')
@@ -96,6 +114,10 @@ describe("transaction", () => {
 
         expect(() => Transaction.decode(unsignedEncoded)).to.throw()
         expect(() => Transaction.decode(signedEncoded, true)).to.throw()
+
+        // Encode invalid reserved field
+        const encodedIncorrectlyDelegated = incorrectlyDelegated.encode().toString('hex')
+        Transaction.decode(Buffer.from(encodedIncorrectlyDelegated, "hex"), true)
     })
 
     const incorrectlySigned = new Transaction(correctTransactionBody)
@@ -104,29 +126,6 @@ describe("transaction", () => {
         expect(incorrectlySigned.origin).equal(null)
         expect(incorrectlySigned.id).equal(null)
         expect(incorrectlySigned.delegator).equal(null)
-    })
-
-
-    const delegated = new Transaction({
-        chainTag: 1,
-        blockRef: '0x00000000aabbccdd',
-        expiration: 32,
-        clauses: [{
-            to: '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed',
-            value: 10000,
-            data: '0x000000606060'
-        }, {
-            to: '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed',
-            value: 20000,
-            data: '0x000000606060'
-        }],
-        gasPriceCoef: 128,
-        gas: 21000,
-        dependsOn: null,
-        nonce: 12345678,
-        reserved: {
-            features: 1
-        }
     })
 
     it('features', () => {
