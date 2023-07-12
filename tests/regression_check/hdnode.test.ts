@@ -2,7 +2,7 @@ import { expect } from "chai"
 import { HDNode, OldHDNode, address, secp256k1 } from "../../src"
 
 
-describe('mnemonic regression check', () => {
+describe('hdnode regression check', () => {
 
     // Mnemonic words
     const words = 'ignore empty bird silly journey junior ripple have guard waste between tenant'.split(' ')
