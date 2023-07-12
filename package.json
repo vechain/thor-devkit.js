@@ -21,6 +21,7 @@
     "lint": "tslint -p .",
     "prepack": "npm run build",
     "test": "tslint -p . && NODE_ENV=test mocha --require ts-node/register --timeout 20000 --recursive  './**/*.test.ts'",
+    "test:regression_check": "tslint -p . && NODE_ENV=test mocha --require ts-node/register --timeout 20000 --recursive  './**/regression_check/*.test.ts'",
     "cover": "NODE_ENV=test nyc npm t"
   },
   "nyc": {
