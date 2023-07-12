@@ -1,5 +1,6 @@
-import * as SecretStorage from '@vechain/ethers/utils/secret-storage'
-import { Buffer } from 'buffer'
+import { ethers } from 'ethers'
+import { secp256k1 } from './secp256k1'
+import { address } from './address'
 
 /** to present encrypted private key in Ethereum keystore format. */
 export interface Keystore {
@@ -16,15 +17,27 @@ export namespace Keystore {
      * @param password password to encrypt the private key
      */
     export function encrypt(privateKey: Buffer, password: string) {
-        return SecretStorage.encrypt(
-            '0x' + privateKey.toString('hex'),
-            password, {
+        // Public and Address are derived from private key
+        const derivePublicKey = secp256k1.derivePublicKey(privateKey)
+        const deriveAddress = address.fromPublicKey(derivePublicKey)
+
+        // Create keystore account compatible with ethers
+        const keystoreAccount: ethers.KeystoreAccount = {
+            address: deriveAddress,
+            privateKey: '0x' + privateKey.toString('hex')
+        }
+
+        // Scrypt options
+        const encryptOptions: ethers.EncryptOptions = {
             scrypt: {
                 N: 131072,
-                p: 1,
-                r: 8
+                r: 8,
+                p: 1
             }
-        }).then(str => normalize(JSON.parse(str)))
+        }
+
+        return ethers.encryptKeystoreJson(keystoreAccount, password, encryptOptions)
+            .then(str => normalize(JSON.parse(str)))
     }
 
     /**
@@ -34,7 +47,7 @@ export namespace Keystore {
      * @param password password to decrypt keystore
      */
     export function decrypt(ks: Keystore, password: string) {
-        return SecretStorage.decrypt(JSON.stringify(ks), password)
+        return ethers.decryptKeystoreJson(JSON.stringify(ks), password)
             .then(sk => Buffer.from(sk.privateKey.slice(2), 'hex'))
     }
 
