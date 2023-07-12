@@ -1,7 +1,8 @@
-import { ethers } from 'ethers'
+import { Base58 } from '@vechain/ethers/utils/basex'
+import * as HD from '@vechain/ethers/utils/hdnode'
 import { createHash } from 'crypto'
 import { ec as EC } from 'elliptic'
-import { address } from './address'
+import { address } from '../address'
 import { Buffer } from 'buffer'
 
 // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
@@ -20,13 +21,11 @@ export interface HDNode {
 }
 
 export namespace HDNode {
-
     /** create node from mnemonic words */
     export function fromMnemonic(words: string[], path=VET_DERIVATION_PATH) {
         // normalize words to lowercase
         const joinedWords = words.join(' ').toLowerCase()
-        const node = ethers.HDNodeWallet.fromMnemonic(ethers.Mnemonic.fromPhrase(joinedWords), path)
-
+        const node = HD.fromMnemonic(joinedWords).derivePath(path)
         return createHDNode(node)
     }
 
@@ -40,8 +39,7 @@ export namespace HDNode {
         const key = Buffer.concat([xpubPrefix, chainCode, Buffer.from(compressed)])
         const checksum = sha256(sha256(key)).slice(0, 4)
 
-        const node = ethers.HDNodeWallet.fromExtendedKey(ethers.encodeBase58(Buffer.concat([key, checksum]))) as ethers.HDNodeWallet
-
+        const node = HD.fromExtendedKey(Base58.encode(Buffer.concat([key, checksum])))
         return createHDNode(node)
     }
 
@@ -54,12 +52,12 @@ export namespace HDNode {
         const key = Buffer.concat([xprivPrefix, chainCode, Buffer.from([0]), priv])
         const checksum = sha256(sha256(key)).slice(0, 4)
 
-        const node = ethers.HDNodeWallet.fromExtendedKey(ethers.encodeBase58(Buffer.concat([key, checksum]))) as ethers.HDNodeWallet
+        const node = HD.fromExtendedKey(Base58.encode(Buffer.concat([key, checksum])))
 
         return createHDNode(node)
     }
 
-    function createHDNode(ethersNode: ethers.HDNodeWallet): HDNode {
+    function createHDNode(ethersNode: HD.HDNode): HDNode {
         const pub = Buffer.from(curve.keyFromPublic(ethersNode.publicKey.slice(2), 'hex').getPublic(false, 'array'))
         const priv = ethersNode.privateKey ? Buffer.from(ethersNode.privateKey.slice(2), 'hex') : null
         const cc = Buffer.from(ethersNode.chainCode.slice(2), 'hex')
@@ -79,7 +77,7 @@ export namespace HDNode {
                 return addr
             },
             derive(index) {
-                return createHDNode(ethersNode.deriveChild(index))
+                return createHDNode(ethersNode.derivePath('' + index))
             }
         }
     }
