@@ -46,7 +46,7 @@ describe("transaction", () => {
         // Invalid features field
         reserved: {
             features: 1,
-            unused: [Buffer.from('0x00', 'hex'), Buffer.from('0x00', 'hex')]
+            unused: [Buffer.alloc(0), Buffer.alloc(0)]
         }
     })
 
