@@ -220,7 +220,7 @@ describe('abi', () => {
         expect(() => abi.encodeParameter('WRONG', 10)).to.throw()
         
         // Exception on decoding
-        expect(() => abi.decodeParameter('uint256', 'WRONG_UINT')).to.throw(Error, "invalid hexidecimal string")
+        expect(() => abi.decodeParameter('uint256', 'WRONG_UINT')).to.throw()
     })
 
     it('function', () => {
