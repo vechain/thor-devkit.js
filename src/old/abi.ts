@@ -3,7 +3,7 @@ import { AbiCoder, formatSignature as _formatSignature } from '@vechain/ethers/u
 import { keccak256 } from '../keccak'
 import { Buffer } from 'buffer'
 
-class Coder extends AbiCoder {
+export class Coder extends AbiCoder {
     constructor() {
         super((type, value) => {
             if ((type.match(/^u?int/) && !Array.isArray(value) && typeof value !== 'object') ||
