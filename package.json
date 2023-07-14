@@ -30,7 +30,8 @@
     ],
     "exclude": [
       "tests/",
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "src/old/**"
     ],
     "extension": [
       ".ts"
@@ -88,7 +89,8 @@
     "ethers": "^6.6.2",
     "fast-json-stable-stringify": "^2.1.0",
     "js-sha3": "0.5.7",
-    "rlp": "^2.0.0"
+    "rlp": "^2.0.0",
+    "web3": "^4.0.3"
   },
   "sideEffects": false
 }
