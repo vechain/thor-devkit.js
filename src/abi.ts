@@ -2,6 +2,8 @@
 import { AbiCoder, formatSignature as _formatSignature } from '@vechain/ethers/utils/abi-coder'
 import { keccak256 } from './keccak'
 import { Buffer } from 'buffer'
+import { ethers } from 'ethers'
+import * as web3 from 'web3'
 
 class Coder extends AbiCoder {
     constructor() {
@@ -38,6 +40,7 @@ class Coder extends AbiCoder {
 }
 
 const coder = new Coder()
+const ethersCoder = new ethers.AbiCoder()
 
 function formatSignature(fragment: any) {
     try {
@@ -62,7 +65,17 @@ export namespace abi {
      * @returns encoded value in hex string
      */
     export function encodeParameter(type: string, value: any) {
-        return coder.encode([type], [value])
+        // const encode1 = coder.encode([type], [value])
+        // const encode2 = ethersCoder.encode([type], [value])
+        // const encode3 = web3.eth.abi.encodeParameter(type, value)
+        // if(encode1 !== encode2 || encode2 !== encode3) {
+        //     console.log('encode1', encode1)
+        //     console.log('encode2', encode2)
+        //     console.log('encode3', encode3)
+        // }
+        const encoded = ethersCoder.encode([type], [value])
+
+        return encoded
     }
 
     /**
@@ -72,7 +85,18 @@ export namespace abi {
      * @returns decoded value
      */
     export function decodeParameter(type: string, data: string) {
-        return coder.decode([type], data)[0]
+        // const decoded1 = coder.decode([type], data)[0]
+        // const decoded2 = ethersCoder.decode([type], data).values().next().value.toString()
+        // const decoded3 = new String(web3.eth.abi.decodeParameter(type, data)).toString()
+
+        // if(decoded1 !== decoded2 || decoded2 !== decoded3) {
+        //     console.log('decoded1', decoded1)
+        //     console.log('decoded2', decoded2)
+        //     console.log('decoded3', decoded3)
+        // }
+        const decoded = ethersCoder.decode([type], data).values().next().value.toString()
+
+        return decoded
     }
 
     /**
@@ -82,7 +106,16 @@ export namespace abi {
      * @returns encoded values in hex string
      */
     export function encodeParameters(types: Function.Parameter[], values: any[]) {
-        return coder.encode(types, values)
+        // const encode1 = coder.encode(types, values)
+        // const encode2 = ethersCoder.encode(types, values)
+        // const encode3 = web3.eth.abi.encodeParameters(types, values)
+        // if(encode1 !== encode2 || encode2 !== encode3) {
+        //     console.log('encode1', encode1)
+        //     console.log('encode2', encode2)
+        //     console.log('encode3', encode3)
+        // }
+        const encode = web3.eth.abi.encodeParameters(types, values)
+        return encode
     }
 
     /**
@@ -92,14 +125,60 @@ export namespace abi {
      * @returns decoded object
      */
     export function decodeParameters(types: Function.Parameter[], data: string) {
-        const result = coder.decode(types, data)
+        // const decoded1 = coder.decode(types, data)
+        // const decoded2 = ethersCoder.decode(types, data).toArray()
+        // let decoded3 = web3.eth.abi.decodeParameters(types, data)
+
+        // if(decoded1 !== decoded2 || decoded2 !== decoded3) {
+        // if(decoded1 !== decoded3) {
+
+        //     console.log('\n\ndecoded1', decoded1)
+        //     // console.log('decoded2', decoded2)
+        //     console.log('decoded3', decoded3)
+        // }
+
+        // 1 - Decode parameters
+        var decodedParameters = web3.eth.abi.decodeParameters(types, data)
+
+        // 2 - Remove __length__ property
+        delete decodedParameters['__length__']
+
+        // 3 - Lowecase address
+        // TODO: UNderstand EIP55 and then decide if we need to lowercase address
+        // for (var entries of Object.entries(decodedParameters)) {
+        //     for (var entry of entries) {
+
+        //         // Hex must be lowercased
+        //         if(typeof entry === 'string' && /^0x[0-9a-f]*/.test(entry)) {
+        //             entry = entry.toLowerCase()
+        //         }
+        //         // Our entry is an object
+        //         else {
+        //             if(typeof entry === 'object') {
+        //                 for (var entriesOfObject of Object.entries(entry)) {
+        //                     for(var element of entriesOfObject[1]){
+        //                         if(typeof element === 'string' && /^0x[0-9a-f]*/.test(element)) {
+        //                             element = element.toLowerCase()
+        //                             console.log('element', element)
+        //                         }
+        //                     }
+        //                 }
+        //             }
+
+        //         }
+
+        //     }
+        // }
+        
+        // 4 - Get final result
         const decoded: Decoded = {}
         types.forEach((t, i) => {
-            decoded[i] = result[i]
+            decoded[i] = decodedParameters[i]
             if (t.name) {
-                decoded[t.name] = result[i]
+                decoded[t.name] = decodedParameters[i]
             }
         })
+        
         return decoded
     }
 
