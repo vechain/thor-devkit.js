@@ -377,13 +377,13 @@ describe('abi', () => {
         expect(decoded.nodes.length).to.equal(2)
 
         const nodes = [{
-            master: '0x0e8fd586e022f825a109848832d7e552132bc332',
-            endorsor: '0x224626926a7a12225a60e127cec119c939db4a5c',
+            master: address.toChecksumed('0x0e8fd586e022f825a109848832d7e552132bc332'),
+            endorsor: address.toChecksumed('0x224626926a7a12225a60e127cec119c939db4a5c'),
             identity: '0xdbf2712e19af00dc4d376728f7cb06cc215c8e7c53b94cb47cefb4a26ada2a6c',
             active: false
         }, {
-            master: '0x4977d68df97bb313b23238520580d8d3a59939bf',
-            endorsor: '0x7ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff',
+            master: address.toChecksumed('0x4977d68df97bb313b23238520580d8d3a59939bf'),
+            endorsor: address.toChecksumed('0x7ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff'),
             identity: '0x83b137cf7e30864b8a4e56453eb1f094b4434685d86895de38ac2edcf5d3f534',
             active: false
         }]
