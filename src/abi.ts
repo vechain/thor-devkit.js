@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { keccak256 } from './keccak'
 import { Buffer } from 'buffer'
 import { ethers } from 'ethers'
@@ -12,7 +11,7 @@ function formatSignature(fragment: any) {
         const fragmentInterface = new ethers.Interface([fragment])
 
         return fragmentInterface.format(true)[0]
-    } catch (err) {
+    } catch (err: any) {
         if (err.reason) {
             throw new Error(err.reason)
         }
@@ -66,7 +65,7 @@ export namespace abi {
      */
     export function decodeParameters(types: Function.Parameter[], data: string) {
         // 1 - Decode parameters
-        var decodedParameters = web3.eth.abi.decodeParameters(types, data)
+        var decodedParameters: any = web3.eth.abi.decodeParameters(types, data)
 
         // 2 - Remove __length__ property
         delete decodedParameters['__length__']
@@ -196,14 +195,14 @@ export namespace abi {
          * 
          * @returns Array of indexed elements [[[], [], ...]]]
          */
-        private getIndexedElementOfDecoded(decoded: Array<Decoded>) {
+        private getIndexedElementOfDecoded(decoded: Decoded) {
             // Base case - Empty object
             if (Object.keys(decoded).length === 0) return []
 
             // Normal cases - Non-empty object
             var values: Array<any> = []
 
-            Object.keys(decoded).forEach(key => {
+            Object.keys(decoded).forEach((key: any) => {
                 // Keys like '0': ..., '1': ..., '2': ..., etc.
                 if (key.match(/^\d+$/)) {
                     values.push(decoded[key])
