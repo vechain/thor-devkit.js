@@ -9,10 +9,17 @@ import * as web3 from 'web3'
 const ethersCoder = new ethers.AbiCoder()
 
 function formatSignature(fragment: any) {
-    try {
-        return _formatSignature(fragment)
+    // New method
+    const fragmentInterface = new ethers.Interface([fragment])
+    console.log("NEW SIGNATURE ETHERS 6:", fragmentInterface.format(true)[0])
+    console.log("OLD SIGNATURE ETHERS 4:", _formatSignature(fragment)
             .replace(/\(tuple\(/g, '((')
-            .replace(/\,tuple\(/g, ',(')
+            .replace(/\,tuple\(/g, ',('))
+    console.log("\n")
+    try {
+        const fragmentInterface = new ethers.Interface([fragment])
+
+        return fragmentInterface.format(true)[0]
     } catch (err) {
         if (err.reason) {
             throw new Error(err.reason)
