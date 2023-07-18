@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { formatSignature as _formatSignature } from '@vechain/ethers/utils/abi-coder'
 import { keccak256 } from './keccak'
 import { Buffer } from 'buffer'
 import { ethers } from 'ethers'
@@ -9,13 +8,6 @@ import * as web3 from 'web3'
 const ethersCoder = new ethers.AbiCoder()
 
 function formatSignature(fragment: any) {
-    // New method
-    const fragmentInterface = new ethers.Interface([fragment])
-    console.log("NEW SIGNATURE ETHERS 6:", fragmentInterface.format(true)[0])
-    console.log("OLD SIGNATURE ETHERS 4:", _formatSignature(fragment)
-            .replace(/\(tuple\(/g, '((')
-            .replace(/\,tuple\(/g, ',('))
-    console.log("\n")
     try {
         const fragmentInterface = new ethers.Interface([fragment])
 
