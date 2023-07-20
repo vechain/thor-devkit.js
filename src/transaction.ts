@@ -142,7 +142,7 @@ export class Transaction {
     /** returns whether delegated. see https://github.com/vechain/VIPs/blob/master/vips/VIP-191.md */
     get delegated() {
         // tslint:disable-next-line:no-bitwise
-        return (((this.body.reserved || {}).features || 0) & Transaction.DELEGATED_MASK) === Transaction.DELEGATED_MASK
+        return (((this.body.reserved ?? {}).features ?? 0) & Transaction.DELEGATED_MASK) === Transaction.DELEGATED_MASK
     }
 
     /** returns intrinsic gas it takes */
@@ -161,9 +161,9 @@ export class Transaction {
     }
 
     private _encodeReserved() {
-        const reserved = this.body.reserved || {}
-        const list = [featuresKind.data(reserved.features || 0, 'reserved.features').encode(),
-        ...(reserved.unused || [])]
+        const reserved = this.body.reserved ?? {}
+        const list = [featuresKind.data(reserved.features ?? 0, 'reserved.features').encode(),
+        ...(reserved.unused ?? [])]
 
         // trim
         while (list.length > 0) {
@@ -254,7 +254,7 @@ export namespace Transaction {
 
         let sum = 0
         for (let i = 2; i < data.length; i += 2) {
-            if (data.substr(i, 2) === '00') {
+            if (data.substring(i, i + 2) === "00") {
                 sum += zgas
             } else {
                 sum += nzgas

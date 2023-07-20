@@ -1,6 +1,5 @@
 import { expect } from 'chai'
-import { abi } from '../src'
-import { keccak256 } from '../src'
+import { abi, keccak256 } from "../src"
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes

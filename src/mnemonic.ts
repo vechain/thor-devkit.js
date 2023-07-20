@@ -9,7 +9,7 @@ export namespace mnemonic {
      * Every 4 bytes produce 3 words.
      */
     export function generate(rng?: () => Buffer) {
-        rng = rng || (() => randomBytes(128 / 8))
+        rng = rng ?? (() => randomBytes(128 / 8))
         return HD.entropyToMnemonic(rng()).split(' ')
     }
 
