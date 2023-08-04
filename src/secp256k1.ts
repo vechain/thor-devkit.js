@@ -25,7 +25,7 @@ export namespace secp256k1 {
      * @param rng the optional random number generator, which exactly generates 32 random bytes
      */
     export function generatePrivateKey(rng?: () => Buffer) {
-        rng = rng || (() => randomBytes(32))
+        rng = rng ?? (() => randomBytes(32))
         for (; ;) {
             const privKey = rng()
             if (isValidPrivateKey(privKey)) {

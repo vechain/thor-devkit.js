@@ -142,7 +142,7 @@ export namespace RLP {
 
         public data(data: string, ctx: string) {
             const encoder = super.data(data, ctx)
-            assert(data!.length === this.bytes * 2 + 2, ctx,
+            assert(data.length === this.bytes * 2 + 2, ctx,
                 `expected hex string presents ${this.bytes} bytes`)
             return encoder
         }
@@ -274,7 +274,7 @@ function isHexString(str: string) {
 }
 
 function isDecString(str: string) {
-    return /^[0-9]+$/.test(str)
+    return /^\d+$/.test(str)
 }
 
 class RLPError extends Error {

@@ -265,6 +265,11 @@ export namespace abi {
     export type Decoded = { [name: string]: any } & { [index: number]: any }
 
     function isValueType(type: string) {
-        return type === 'address' || type === 'bool' || /^(u?int)([0-9]*)$/.test(type) || /^bytes([0-9]+)$/.test(type)
+        return (
+            type === "address" ||
+            type === "bool" ||
+            /^(u?int)(\d*)$/.test(type) ||
+            /^bytes(\d+)$/.test(type)
+        )
     }
 }
