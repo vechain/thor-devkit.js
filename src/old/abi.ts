@@ -1,17 +1,50 @@
-import { keccak256 } from './keccak'
+// @ts-nocheck
+import { AbiCoder, formatSignature as _formatSignature } from '@vechain/ethers/utils/abi-coder'
+import { keccak256 } from '../keccak'
 import { Buffer } from 'buffer'
-import { ethers } from 'ethers'
-import * as web3 from 'web3'
 
-// Ethers coder instance
-const ethersCoder = new ethers.AbiCoder()
+export class Coder extends AbiCoder {
+    constructor() {
+        super((type, value) => {
+            if ((type.match(/^u?int/) && !Array.isArray(value) && typeof value !== 'object') ||
+                value._ethersType === 'BigNumber') {
+                return value.toString()
+            }
+            return value
+        })
+    }
+
+    public encode(types: Array<string|abi.Function.Parameter>, values: any[]): string {
+        try {
+            return super.encode(types, values)
+        } catch (err) {
+            if (err.reason) {
+                throw new Error(err.reason)
+            }
+            throw err
+        }
+    }
+
+    public decode(types: Array<string|abi.Function.Parameter>, data: string): any[] {
+        try {
+            return super.decode(types, data)
+        } catch (err) {
+            if (err.reason) {
+                throw new Error(err.reason)
+            }
+            throw err
+        }
+    }
+}
+
+const coder = new Coder()
 
 function formatSignature(fragment: any) {
     try {
-        const fragmentInterface = new ethers.Interface([fragment])
-
-        return fragmentInterface.format(true)[0]
-    } catch (err: any) {
+        return _formatSignature(fragment)
+            .replace(/\(tuple\(/g, '((')
+            .replace(/\,tuple\(/g, ',(')
+    } catch (err) {
         if (err.reason) {
             throw new Error(err.reason)
         }
@@ -29,9 +62,7 @@ export namespace abi {
      * @returns encoded value in hex string
      */
     export function encodeParameter(type: string, value: any) {
-        const encoded = ethersCoder.encode([type], [value])
-
-        return encoded
+        return coder.encode([type], [value])
     }
 
     /**
@@ -41,9 +72,7 @@ export namespace abi {
      * @returns decoded value
      */
     export function decodeParameter(type: string, data: string) {
-        const decoded = ethersCoder.decode([type], data).values().next().value.toString()
-
-        return decoded
+        return coder.decode([type], data)[0]
     }
 
     /**
@@ -53,8 +82,7 @@ export namespace abi {
      * @returns encoded values in hex string
      */
     export function encodeParameters(types: Function.Parameter[], values: any[]) {
-        const encode = web3.eth.abi.encodeParameters(types, values)
-        return encode
+        return coder.encode(types, values)
     }
 
     /**
@@ -64,21 +92,14 @@ export namespace abi {
      * @returns decoded object
      */
     export function decodeParameters(types: Function.Parameter[], data: string) {
-        // 1 - Decode parameters
-        let decodedParameters: any = web3.eth.abi.decodeParameters(types, data)
-
-        // 2 - Remove __length__ property
-        delete decodedParameters['__length__']
-
-        // 3 - Get final result
+        const result = coder.decode(types, data)
         const decoded: Decoded = {}
         types.forEach((t, i) => {
-            decoded[i] = decodedParameters[i]
+            decoded[i] = result[i]
             if (t.name) {
-                decoded[t.name] = decodedParameters[i]
+                decoded[t.name] = result[i]
             }
         })
-
         return decoded
     }
 
@@ -188,31 +209,6 @@ export namespace abi {
         }
 
         /**
-         * Get indexed elements of decoded object.
-         * Indexed elements are elements with keys like '0', '1', '2', etc.
-         * 
-         * @param decoded Decoded object from decodeParameters function
-         * 
-         * @returns Array of indexed elements [[[], [], ...]]]
-         */
-        private getIndexedElementOfDecoded(decoded: Decoded) {
-            // Base case - Empty object
-            if (Object.keys(decoded).length === 0) return []
-
-            // Normal cases - Non-empty object
-            let values: Array<any> = []
-
-            Object.keys(decoded).forEach((key: any) => {
-                // Keys like '0': ..., '1': ..., '2': ..., etc.
-                if (key.match(/^\d+$/)) {
-                    values.push(decoded[key])
-                }
-            })
-
-            return values
-        }
-
-        /**
          * decode event log
          * @param data data in event output
          * @param topics topics in event
@@ -226,16 +222,16 @@ export namespace abi {
                 throw new Error('invalid topics count')
             }
 
-            const nonIndexedInput = this.definition.inputs.filter(t => !t.indexed)
-            const decodedIndexed = this.getIndexedElementOfDecoded(decodeParameters(nonIndexedInput, data))
-
+            const decodedNonIndexed = coder.decode(
+                this.definition.inputs.filter(t => !t.indexed), data)
+            
             const decoded: Decoded = {}
             this.definition.inputs.forEach((t, i) => {
                 if (t.indexed) {
                     const topic = topics.shift()!
-                    decoded[i] = isValueType(t.type) ? decodeParameter(t.type, topic) : topic
+                    decoded[i] = isValueType(t.type) ? decodeParameter(t.type, topic) : topic 
                 } else {
-                    decoded[i] = decodedIndexed.shift()
+                    decoded[i] = decodedNonIndexed.shift()
                 }
                 if (t.name) {
                     decoded[t.name] = decoded[i]
@@ -265,11 +261,6 @@ export namespace abi {
     export type Decoded = { [name: string]: any } & { [index: number]: any }
 
     function isValueType(type: string) {
-        return (
-            type === "address" ||
-            type === "bool" ||
-            /^(u?int)(\d*)$/.test(type) ||
-            /^bytes(\d+)$/.test(type)
-        )
+        return type === 'address' || type === 'bool' || /^(u?int)([0-9]*)$/.test(type) || /^bytes([0-9]+)$/.test(type)
     }
 }

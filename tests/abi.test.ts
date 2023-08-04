@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { abi, keccak256 } from "../src"
+import { abi, keccak256, address } from "../src"
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
@@ -219,16 +219,16 @@ describe('abi', () => {
         expect(() => abi.encodeParameter('WRONG', 10)).to.throw()
         
         // Exception on decoding
-        expect(() => abi.decodeParameter('uint256', 'WRONG_UINT')).to.throw(Error, "invalid hexidecimal string")
+        expect(() => abi.decodeParameter('uint256', 'WRONG_UINT')).to.throw()
     })
 
     it('function', () => {
-        expect(f1.signature).equal('0x27fcbb2f')
-        expect(f1.encode(1, 'foo')).equal('0x27fcbb2f000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000')
+        expect(f1.signature).equal('0x81b00db7')
+        expect(f1.encode(1, 'foo')).equal('0x81b00db7000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000')
         expect(f1.decode('0x000000000000000000000000abc000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000')).deep.equal({
-            0: '0xabc0000000000000000000000000000000000001',
+            0: address.toChecksumed('0xabc0000000000000000000000000000000000001'),
             1: '0x666f6f',
-            r1: '0xabc0000000000000000000000000000000000001',
+            r1: address.toChecksumed('0xabc0000000000000000000000000000000000001'),
             r2: '0x666f6f'
         })
 
@@ -258,11 +258,11 @@ describe('abi', () => {
     })
 
     it('event', () => {
-        expect(e1.signature).equal('0x47b78f0ec63d97830ace2babb45e6271b15a678528e901a9651e45b65105e6c2')
+        expect(e1.signature).equal('0x4e61d2159c0016af010c0521c021973c907af5275b572e6d533e912a4e1ab8c3')
         expect(e1.decode(
             '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000',
             [
-                '0x47b78f0ec63d97830ace2babb45e6271b15a678528e901a9651e45b65105e6c2',
+                '0x4e61d2159c0016af010c0521c021973c907af5275b572e6d533e912a4e1ab8c3',
                 '0x0000000000000000000000000000000000000000000000000000000000000001'
             ]))
             .deep.equal({
@@ -284,19 +284,19 @@ describe('abi', () => {
 
         expect(e1.encode({}))
             .deep.equal([
-                '0x47b78f0ec63d97830ace2babb45e6271b15a678528e901a9651e45b65105e6c2',
+                '0x4e61d2159c0016af010c0521c021973c907af5275b572e6d533e912a4e1ab8c3',
                 null
             ])
 
         expect(e1.encode({ a1: 1 }))
             .deep.equal([
-                '0x47b78f0ec63d97830ace2babb45e6271b15a678528e901a9651e45b65105e6c2',
+                '0x4e61d2159c0016af010c0521c021973c907af5275b572e6d533e912a4e1ab8c3',
                 '0x0000000000000000000000000000000000000000000000000000000000000001'
             ])
 
         expect(e1.encode({ a1: 1, x: 3 }))
             .deep.equal([
-                '0x47b78f0ec63d97830ace2babb45e6271b15a678528e901a9651e45b65105e6c2',
+                '0x4e61d2159c0016af010c0521c021973c907af5275b572e6d533e912a4e1ab8c3',
                 '0x0000000000000000000000000000000000000000000000000000000000000001'
             ])
         expect(e2.encode({ a1: 1 }))
@@ -306,12 +306,12 @@ describe('abi', () => {
 
         expect(e3.encode({ a1: 1 }))
             .deep.equal([
-                '0xe96585649d926cc4f5031a6113d7494d766198c0ac68b04eb93207460f9d7fd2',
+                '0xde1913e64cdac8a0da24fe0f36e752b8808b8f3dffc0edfdd7924b06ef90966e',
                 '0x0000000000000000000000000000000000000000000000000000000000000001'
             ])
 
-        expect(e3.decode('0x0',
-            ['0xe96585649d926cc4f5031a6113d7494d766198c0ac68b04eb93207460f9d7fd2',
+        expect(e3.decode('0x',
+            ['0xde1913e64cdac8a0da24fe0f36e752b8808b8f3dffc0edfdd7924b06ef90966e',
                 '0x0000000000000000000000000000000000000000000000000000000000000001']))
             .deep.equal({
                 "0": "1",
@@ -341,13 +341,13 @@ describe('abi', () => {
         expect(decoded.list.length).to.equal(6)
 
         const data = [{
-            master: '0x0e8fd586e022f825a109848832d7e552132bc332',
-            endorsor: '0x224626926a7a12225a60e127cec119c939db4a5c',
+            master: address.toChecksumed('0x0e8fd586e022f825a109848832d7e552132bc332'),
+            endorsor: address.toChecksumed('0x224626926a7a12225a60e127cec119c939db4a5c'),
             identity: '0xdbf2712e19af00dc4d376728f7cb06cc215c8e7c53b94cb47cefb4a26ada2a6c',
             active: false
         }, {
-            master: '0x4977d68df97bb313b23238520580d8d3a59939bf',
-            endorsor: '0x7ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff',
+            master: address.toChecksumed('0x4977d68df97bb313b23238520580d8d3a59939bf'),
+            endorsor: address.toChecksumed('0x7ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff'),
             identity: '0x83b137cf7e30864b8a4e56453eb1f094b4434685d86895de38ac2edcf5d3f534',
             active: false
         }]
@@ -376,13 +376,13 @@ describe('abi', () => {
         expect(decoded.nodes.length).to.equal(2)
 
         const nodes = [{
-            master: '0x0e8fd586e022f825a109848832d7e552132bc332',
-            endorsor: '0x224626926a7a12225a60e127cec119c939db4a5c',
+            master: address.toChecksumed('0x0e8fd586e022f825a109848832d7e552132bc332'),
+            endorsor: address.toChecksumed('0x224626926a7a12225a60e127cec119c939db4a5c'),
             identity: '0xdbf2712e19af00dc4d376728f7cb06cc215c8e7c53b94cb47cefb4a26ada2a6c',
             active: false
         }, {
-            master: '0x4977d68df97bb313b23238520580d8d3a59939bf',
-            endorsor: '0x7ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff',
+            master: address.toChecksumed('0x4977d68df97bb313b23238520580d8d3a59939bf'),
+            endorsor: address.toChecksumed('0x7ad1d568b3fe5bad3fc264aca70bc7bcd5e4a6ff'),
             identity: '0x83b137cf7e30864b8a4e56453eb1f094b4434685d86895de38ac2edcf5d3f534',
             active: false
         }]

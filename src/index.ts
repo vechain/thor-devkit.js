@@ -12,3 +12,9 @@ export * from './keccak'
 export * from './keystore'
 export * from './mnemonic'
 export * from './hdnode'
+
+// Old
+export * as OldAbi from './old/abi'
+export * as OldHDNode from './old/hdnode'
+export * as OldKeystore from './old/keystore'
+export * as OldMnemonic from './old/mnemonic'

@@ -20,7 +20,8 @@
     "build": "rm -rf dist/ esm/ && tsc -d -p . && tsc --module esnext --outDir 'esm' -p .",
     "lint": "tslint -p .",
     "prepack": "npm run build",
-    "test": "tslint -p . && NODE_ENV=test mocha --require ts-node/register --timeout 20000 --recursive  './**/*.test.ts'",
+    "test": "tslint -p . && NODE_ENV=test mocha --require ts-node/register --timeout 20000 --recursive  './[!regression_check]**/*.test.ts'",
+    "test:regression_check": "tslint -p . && NODE_ENV=test mocha --require ts-node/register --timeout 20000 --recursive  './**/regression_check/*.test.ts'",
     "cover": "NODE_ENV=test nyc npm t"
   },
   "nyc": {
@@ -29,7 +30,8 @@
     ],
     "exclude": [
       "tests/",
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "src/old/**"
     ],
     "extension": [
       ".ts"
@@ -67,6 +69,7 @@
   },
   "homepage": "https://github.com/vechain/thor-devkit.js#readme",
   "devDependencies": {
+    "@typechain/ethers-v6": "^0.4.0",
     "@types/chai": "^4.1.3",
     "@types/elliptic": "^6.4.9",
     "@types/mocha": "^5.2.1",
@@ -76,16 +79,18 @@
     "nyc": "^14.1.1",
     "ts-node": "^8.3.0",
     "tslint": "^5.11.0",
-    "typescript": "^3.9.7"
+    "typescript": "^5.1.6"
   },
   "dependencies": {
     "@vechain/ethers": "^4.0.27-5",
     "bignumber.js": "^7.2.1",
     "blakejs": "^1.1.2",
     "elliptic": "6.5.4",
+    "ethers": "^6.6.2",
     "fast-json-stable-stringify": "^2.1.0",
     "js-sha3": "0.5.7",
-    "rlp": "^2.0.0"
+    "rlp": "^2.0.0",
+    "web3": "^4.0.3"
   },
   "sideEffects": false
 }
