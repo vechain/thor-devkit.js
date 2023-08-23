@@ -200,8 +200,8 @@ export namespace Transaction {
 
     /** body type */
     export interface Body {
-        /** last byte of genesis block ID */
-        chainTag: number
+        /** Genesis block ID */
+        chainTag: string
         /** 8 bytes prefix of some block's ID */
         blockRef: string
         /** constraint of time bucket */
@@ -267,7 +267,7 @@ export namespace Transaction {
 const unsignedTxRLP = new RLP({
     name: 'tx',
     kind: [
-        { name: 'chainTag', kind: new RLP.NumericKind(1) },
+        { name: 'chainTag', kind: new RLP.NullableFixedBlobKind(1) },
         { name: 'blockRef', kind: new RLP.CompactFixedBlobKind(8) },
         { name: 'expiration', kind: new RLP.NumericKind(4) },
         {

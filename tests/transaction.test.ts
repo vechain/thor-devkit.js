@@ -10,7 +10,7 @@ describe("transaction", () => {
 
     // Correct transaction body
     const correctTransactionBody: Transaction.Body = {
-        chainTag: 1,
+        chainTag: "0x01",
         blockRef: '0x00000000aabbccdd',
         expiration: 32,
         clauses: [{
@@ -76,9 +76,9 @@ describe("transaction", () => {
     })
 
     it('invalid body', () => {
-        expect(() => { new Transaction({ ...correctTransactionBody, chainTag: 256 }).encode() }).to.throw()
-        expect(() => { new Transaction({ ...correctTransactionBody, chainTag: -1 }).encode() }).to.throw()
-        expect(() => { new Transaction({ ...correctTransactionBody, chainTag: 1.1 }).encode() }).to.throw()
+        expect(() => { new Transaction({ ...correctTransactionBody, chainTag: "256" }).encode() }).to.throw()
+        expect(() => { new Transaction({ ...correctTransactionBody, chainTag: "-1" }).encode() }).to.throw()
+        expect(() => { new Transaction({ ...correctTransactionBody, chainTag: "1.1" }).encode() }).to.throw()
 
         expect(() => { new Transaction({ ...correctTransactionBody, blockRef: '0x' }).encode() }).to.throw()
         expect(() => { new Transaction({ ...correctTransactionBody, blockRef: '0x' + '0'.repeat(18) }).encode() }).to.throw()
