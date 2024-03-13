@@ -6,6 +6,9 @@ Typescript library to aid DApp development on VeChain Thor
 [![Build Status](https://travis-ci.org/vechain/thor-devkit.js.svg)](https://travis-ci.org/vechain/thor-devkit.js)
 [![Coverage Status](https://coveralls.io/repos/github/vechain/thor-devkit.js/badge.svg?branch=master)](https://coveralls.io/github/vechain/thor-devkit.js?branch=master)
 
+> **Note** <br />
+> Please consider using the new [SDK](https://github.com/vechain/vechain-sdk-js), as it offers advanced features, improved performance, and better compatibility with the latest developments on the VeChainThor platform.
+
 ## Installation
 
 ```bash
