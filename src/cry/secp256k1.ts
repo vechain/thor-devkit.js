@@ -1,5 +1,5 @@
-import * as randomBytes from 'randombytes'
 import { ec as EC } from 'elliptic'
+import * as randomBytes from 'randombytes'
 
 const curve = new EC('secp256k1')
 
