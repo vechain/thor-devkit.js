@@ -1,5 +1,10 @@
 import { expect } from 'chai'
-import { cry } from '../src'
+import { publicKeyToAddress } from '../src/cry/address'
+import { blake2b256 } from '../src/cry/blake2b'
+import { keccak256 } from '../src/cry/keccak'
+import { secp256k1 } from '../src/cry/secp256k1'
+
+const cry = { publicKeyToAddress, blake2b256, keccak256, secp256k1}
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
@@ -17,33 +22,6 @@ describe('hash', () => {
         expect(cry.keccak256(Buffer.alloc(0)).toString('hex')).equal('c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470')
         expect(cry.keccak256('hello world').toString('hex')).equal('47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad')
         expect(cry.keccak256('hello', ' world').toString('hex')).equal('47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad')
-    })
-})
-
-describe('isValidAddress', () => {
-    it('validate address', () => {
-        expect(cry.isAddress('not an address')).equal(false)
-        expect(cry.isAddress('52908400098527886E0F7030069857D2E4169EE7')).equal(false)
-        expect(cry.isAddress('0x52908400098527886E0F7030069857D2E4169EE7')).equal(true)
-    })
-})
-
-describe('toChecksumAddress', () => {
-    it('invalid input should throw error', () => {
-        expect(() => { cry.toChecksumAddress('invalid data') }).to.throw('invalid address')
-        expect(() => { cry.toChecksumAddress('52908400098527886E0F7030069857D2E4169EE7') }).to.throw('invalid address')
-    })
-
-    it('valid input', () => {
-        expect(cry.toChecksumAddress('0x8617E340B3D01FA5F11F306F4090FD50E238070D')).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
-        expect(cry.toChecksumAddress('0x8617E340B3D01FA5F11F306F4090FD50E238070D'.toLowerCase())).equal('0x8617E340B3D01FA5F11F306F4090FD50E238070D')
-        expect(cry.toChecksumAddress('0xde709f2102306220921060314715629080e2fb77')).equal('0xde709f2102306220921060314715629080e2fb77')
-        expect(cry.toChecksumAddress('0xde709f2102306220921060314715629080e2fb77'.toLowerCase())).equal('0xde709f2102306220921060314715629080e2fb77')
-        expect(cry.toChecksumAddress('0x27b1fdb04752bbc536007a920d24acb045561c26')).equal('0x27b1fdb04752bbc536007a920d24acb045561c26')
-        expect(cry.toChecksumAddress('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')).equal('0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed')
-        expect(cry.toChecksumAddress('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')).equal('0xfB6916095ca1df60bB79Ce92cE3Ea74c37c5d359')
-        expect(cry.toChecksumAddress('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')).equal('0xdbF03B407c01E7cD3CBea99509d93f8DDDC8C6FB')
-        expect(cry.toChecksumAddress('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')).equal('0xD1220A0cf47c7B9Be7A2E6BA89F429762e7b9aDb')
     })
 })
 

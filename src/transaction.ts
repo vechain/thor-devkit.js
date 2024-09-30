@@ -7,46 +7,6 @@ import { RLP } from './rlp'
 export class Transaction {
     public static readonly DELEGATED_MASK = 1
 
-    /** decode from Buffer to transaction
-     * @param raw encoded buffer
-     * @param unsigned to indicator if the encoded buffer contains signature
-     */
-    public static decode(raw: Buffer, unsigned?: boolean) {
-        let body: Transaction.Body
-        let signature: Buffer | undefined
-        if (unsigned) {
-            body = unsignedTxRLP.decode(raw)
-        } else {
-            const decoded = txRLP.decode(raw)
-            signature = decoded.signature as Buffer
-            delete decoded.signature
-            body = decoded
-        }
-
-        const reserved = body.reserved as Buffer[]
-        if (reserved.length > 0) {
-            if (reserved[reserved.length - 1].length === 0) {
-                throw new Error('invalid reserved fields: not trimmed')
-            }
-
-            const features = featuresKind.buffer(reserved[0], 'reserved.features').decode() as number
-            body.reserved = {
-                features
-            }
-            if (reserved.length > 1) {
-                body.reserved.unused = reserved.slice(1)
-            }
-        } else {
-            delete body.reserved
-        }
-
-        const tx = new Transaction(body)
-        if (signature) {
-            tx.signature = signature
-        }
-        return tx
-    }
-
     public readonly body: Transaction.Body
 
     /** signature to transaction */

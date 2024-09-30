@@ -1,5 +1,10 @@
 import { expect } from 'chai'
-import { cry, Transaction } from '../src'
+import { Transaction } from '../src'
+import { publicKeyToAddress } from '../src/cry/address'
+import { blake2b256 } from '../src/cry/blake2b'
+import { secp256k1 } from '../src/cry/secp256k1'
+
+const cry = { publicKeyToAddress, blake2b256, secp256k1 }
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
@@ -49,8 +54,6 @@ describe("transaction", () => {
         expect(unsigned.origin).equal(null)
 
         expect(unsigned.encode().toString('hex')).equal(unsignedEncoded.toString('hex'))
-        expect(Transaction.decode(unsignedEncoded, true))
-            .deep.equal(unsigned)
     })
 
     it('invalid body', () => {
@@ -88,10 +91,6 @@ describe("transaction", () => {
 
     it("encode decode", () => {
         expect(signed.encode().toString('hex')).equal(signedEncoded.toString('hex'))
-        expect(Transaction.decode(signedEncoded)).deep.equal(signed)
-
-        expect(() => Transaction.decode(unsignedEncoded)).to.throw()
-        expect(() => Transaction.decode(signedEncoded, true)).to.throw()
     })
 
     const incorrectlySigned = new Transaction(body)
