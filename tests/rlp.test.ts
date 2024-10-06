@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { RLP } from '../src'
+import { RLP } from '../src/rlp'
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
 // tslint:disable:max-line-length
