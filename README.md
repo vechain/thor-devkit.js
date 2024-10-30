@@ -1,6 +1,6 @@
 # Thor DevKit
 
-Typescript library to aid DApp development on VeChain Thor
+Typescript library to aid dApp development on VeChainThor.
 
 [![NPM Version](https://badge.fury.io/js/thor-devkit.svg)](https://www.npmjs.com/package/thor-devkit)
 [![Unit Test](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml/badge.svg)](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml)
@@ -16,7 +16,7 @@ npm i thor-devkit
 
 ### Transaction
 
-to build and sign a transaction
+To build and sign a transaction:
 
 ```javascript
 import { Transaction, secp256k1 } from 'thor-devkit'
@@ -53,7 +53,7 @@ const decoded = Transaction.decode(raw)
 
 ### Certificate
 
-client side self-signed certificate
+Client side self-signed certificate:
 
 ```javascript
 import { Certificate, secp256k1, blake2b256 } from 'thor-devkit'
