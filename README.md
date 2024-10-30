@@ -1,12 +1,38 @@
 # Thor DevKit
 
-Typescript library to aid DApp development on VeChain Thor
+Typescript library to aid dApp development on VeChainThor.
 
 [![NPM Version](https://badge.fury.io/js/thor-devkit.svg)](https://www.npmjs.com/package/thor-devkit)
 [![Unit Test](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml/badge.svg)](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/vechain/thor-devkit.js/badge.svg?branch=master)](https://coveralls.io/github/vechain/thor-devkit.js?branch=master)
 
+## ⚠️ Repository Notice: End-of-Life (EOL)
+
+**This repository is now archived and has reached its end-of-life (EOL).** We have transitioned to a new and improved repository that will continue to receive updates, support, and new features.
+
+### Important Dates:
+- **Final Version Release:** November 4th, 2024
+- **End-of-Support Date:** December 31st, 2024
+- **Repository Archive Date:** December 31st, 2024
+
+### New Repository
+You can start using the [VeChain SDK](https://github.com/vechain/vechain-sdk-js) for the latest updates and developments.
+
+### Thank You
+Thank you to all contributors and users for supporting this project. We appreciate your interest and encourage you to explore the new repository for ongoing improvements and features.
+
+---
+
+For any further questions or migration guidance, please reach out using our [support portal](https://support.vechain.org/support/home).
+
+## Prerequisites
+
+ - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+ - [Node.js](https://nodejs.org/en): minimum version is `18`.
+
 ## Installation
+
+To install the library, run:
 
 ```bash
 npm i thor-devkit
@@ -16,7 +42,7 @@ npm i thor-devkit
 
 ### Transaction
 
-to build and sign a transaction
+To build and sign a transaction:
 
 ```javascript
 import { Transaction, secp256k1 } from 'thor-devkit'
@@ -53,7 +79,7 @@ const decoded = Transaction.decode(raw)
 
 ### Certificate
 
-client side self-signed certificate
+Client side self-signed certificate:
 
 ```javascript
 import { Certificate, secp256k1, blake2b256 } from 'thor-devkit'
@@ -224,6 +250,5 @@ for (let i = 0; i < 5; i++) {
 
 ## License
 
-thor-devkit is licensed under the
-[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html), also included
-in *LICENSE* file in repository.
+Thor DevKit is licensed under the
+[MIT License](https://github.com/vechain/thor-devkit.js/blob/master/LICENSE).
