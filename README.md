@@ -224,6 +224,5 @@ for (let i = 0; i < 5; i++) {
 
 ## License
 
-thor-devkit is licensed under the
-[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.html), also included
-in *LICENSE* file in repository.
+Thor DevKit is licensed under the
+[MIT License](https://github.com/vechain/thor-devkit.js/blob/master/LICENSE).
