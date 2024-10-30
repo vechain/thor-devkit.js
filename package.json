@@ -1,6 +1,6 @@
 {
   "name": "thor-devkit",
-  "version": "2.0.7",
+  "version": "2.0.9",
   "description": "Typescript library to aid DApp development on VeChain Thor",
   "main": "dist/index.js",
   "module": "esm/index.js",
@@ -61,7 +61,7 @@
     "abi"
   ],
   "author": "qianbin",
-  "license": "LGPL-3.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/vechain/thor-devkit.js/issues"
   },

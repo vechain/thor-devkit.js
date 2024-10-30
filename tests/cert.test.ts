@@ -33,9 +33,17 @@ describe('cert', () => {
     })
 
     it('verify', () => {
+        // Valid signature
         const sig = '0x' + secp256k1.sign(blake2b256(Certificate.encode(cert)), privKey).toString('hex')
         expect(() => Certificate.verify({ ...cert, signature: sig, signer: '0x' })).to.throw()
         expect(() => Certificate.verify({ ...cert, signature: sig })).not.to.throw()
         expect(() => Certificate.verify({ ...cert, signature: sig.toUpperCase() })).not.to.throw()
+
+        // Invalid signature
+        const invalidSignature = '0xBAD' + secp256k1.sign(blake2b256(Certificate.encode(cert)), privKey).toString('hex')
+        expect(() => Certificate.verify({ ...cert, signature: invalidSignature, signer: '0x' })).to.throw()
+        
+        // No signature
+        expect(() => Certificate.verify({ ...cert, signer: '0x' })).to.throw()
     })
 })

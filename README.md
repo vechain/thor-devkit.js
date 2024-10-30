@@ -3,7 +3,7 @@
 Typescript library to aid DApp development on VeChain Thor
 
 [![NPM Version](https://badge.fury.io/js/thor-devkit.svg)](https://www.npmjs.com/package/thor-devkit)
-[![Build Status](https://travis-ci.org/vechain/thor-devkit.js.svg)](https://travis-ci.org/vechain/thor-devkit.js)
+[![Unit Test](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml/badge.svg)](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/vechain/thor-devkit.js/badge.svg?branch=master)](https://coveralls.io/github/vechain/thor-devkit.js?branch=master)
 
 ## Installation

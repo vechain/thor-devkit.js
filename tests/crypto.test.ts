@@ -53,14 +53,31 @@ describe('secp256k1', () => {
     const addr = '0xd989829d88b0ed1b06edf5c50174ecfa64f14a64'
     const msgHash = keccak256('hello world')
     const sig = Buffer.from('f8fe82c74f9e1f5bf443f8a7f8eb968140f554968fdcab0a6ffe904e451c8b9244be44bccb1feb34dd20d9d8943f8c131227e55861736907b02d32c06b934d7200', 'hex')
+    
+    const invalidPrivateKey = Buffer.from('INVALID_PRIVATE_KEY', 'hex')
+    const invalidMessageHash = Buffer.from('INVALID_MESSAGE_HASH', 'hex')
+    const invalidSignature = Buffer.from('INVALID_SIGNATURE', 'hex')
+    const validSignatureWithWrongRecovery = Buffer.from('f8fe82c74f9e1f5bf443f8a7f8eb968140f554968fdcab0a6ffe904e451c8b9244be44bccb1feb34dd20d9d8943f8c131227e55861736907b02d32c06b934d72FF', 'hex')
 
     it('derive', () => {
         expect(secp256k1.derivePublicKey(privKey)).deep.equal(pubKey)
         expect(address.fromPublicKey(pubKey)).deep.equal(addr)
+
+        // Invalid private key to derive public key
+        expect(() => secp256k1.derivePublicKey(invalidPrivateKey)).to.throw(Error, 'invalid private key')
     })
     it('sign/recover', () => {
         expect(secp256k1.sign(msgHash, privKey)).deep.equal(sig)
         expect(secp256k1.recover(msgHash, sig)).deep.equal(pubKey)
+
+        // Sign with invalid private key AND invalid message hash
+        expect(() => secp256k1.sign(msgHash, invalidPrivateKey)).to.throw(Error, 'invalid private key')
+        expect(() => secp256k1.sign(invalidMessageHash, privKey)).to.throw(Error, 'invalid message hash')
+
+        // Recover with invalid message hash AND invalid signature AND invalid signature recovery
+        expect(() => secp256k1.recover(invalidMessageHash, sig)).to.throw(Error, 'invalid message hash')
+        expect(() => secp256k1.recover(msgHash, invalidSignature)).to.throw(Error, 'invalid signature')
+        expect(() => secp256k1.recover(msgHash, validSignatureWithWrongRecovery)).to.throw(Error, 'invalid signature recovery')
     })
 })
 
@@ -171,5 +188,24 @@ describe('mnemonic', () => {
         // non-lowercase
         const node2 = HDNode.fromMnemonic(words.map(w => w.toUpperCase()))
         expect(node.address === node2.address)
+    })
+
+    it('hdNode custom path', () => {
+        const eth_path = `m/44'/60'/0'/0`
+        const node = HDNode.fromMnemonic(words, eth_path)
+        // test case generated via https://iancoleman.io/bip39/
+        const addresses = [
+            '4473c83a6a9661ab9cdb6b07749998ad9e77a580',
+            '858531457566df8b60cf1355b54e48e04e36be33',
+            '40b5aa8b54aafaf6323b58ce5737ce320d92cf99',
+            '988f3af24dca0a3080f9ab5a1f57d706c6b8f011',
+            'ffb0e35ba82856f8f5b7a57104c38a73f3ceff03'
+        ]
+        for (let i = 0; i < 5; i++) {
+            const child = node.derive(i)
+            expect(address.fromPublicKey(child.publicKey).slice(2)).equal(addresses[i])
+            expect(child.address).equal('0x' + addresses[i])
+            expect(secp256k1.derivePublicKey(child.privateKey!).toString('hex')).equal(child.publicKey.toString('hex'))
+        }
     })
 })
