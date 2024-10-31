@@ -12,7 +12,7 @@ Typescript library to aid dApp development on VeChainThor.
 ## Prerequisites
 
  - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
- - [Node.js](https://nodejs.org/en): minimum versions is `18`.
+ - [Node.js](https://nodejs.org/en): minimum version is `18`.
 
 ## Installation
 
