@@ -12,7 +12,7 @@ jobs:
     name: Node ${{ matrix.node }}
     strategy:
       matrix:
-        node: [14,16,18, lts/*, latest]
+        node: [18, lts/*, latest]
 
     steps:
       - uses: actions/checkout@v3
