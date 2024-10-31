@@ -6,8 +6,24 @@ Typescript library to aid dApp development on VeChainThor.
 [![Unit Test](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml/badge.svg)](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/vechain/thor-devkit.js/badge.svg?branch=master)](https://coveralls.io/github/vechain/thor-devkit.js?branch=master)
 
-> **Note** <br />
-> The `thor-devkit.js` library will soon be deprecated. We encourage you to use the new [VeChain SDK](https://github.com/vechain/vechain-sdk-js).
+## ⚠️ Repository Notice: End-of-Life (EOL)
+
+**This repository is now archived and has reached its end-of-life (EOL).** We have transitioned to a new and improved repository that will continue to receive updates, support, and new features.
+
+### Important Dates:
+- **Final Version Release:** November 4th, 2024
+- **End-of-Support Date:** December 31st, 2024
+- **Repository Archive Date:** December 31st, 2024
+
+### New Repository
+You can start using the [VeChain SDK](https://github.com/vechain/vechain-sdk-js) for the latest updates and developments.
+
+### Thank You
+Thank you to all contributors and users for supporting this project. We appreciate your interest and encourage you to explore the new repository for ongoing improvements and features.
+
+---
+
+For any further questions or migration guidance, please reach out using our [support portal](https://support.vechain.org/support/home).
 
 ## Prerequisites
 
