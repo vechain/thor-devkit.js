@@ -6,7 +6,17 @@ Typescript library to aid dApp development on VeChainThor.
 [![Unit Test](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml/badge.svg)](https://github.com/vechain/thor-devkit.js/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/vechain/thor-devkit.js/badge.svg?branch=master)](https://coveralls.io/github/vechain/thor-devkit.js?branch=master)
 
+> **Note** <br />
+> The `thor-devkit.js` library will soon be deprecated. We encourage you to use the new [VeChain SDK](https://github.com/vechain/vechain-sdk-js).
+
+## Prerequisites
+
+ - [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+ - [Node.js](https://nodejs.org/en): minimum versions is `18`.
+
 ## Installation
+
+To install the library, run:
 
 ```bash
 npm i thor-devkit
