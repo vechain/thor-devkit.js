@@ -1,4 +1,4 @@
-import  blake from 'blakejs'
+import blake from 'blakejs'
 import { Buffer } from 'buffer'
 
 /**

@@ -13,7 +13,7 @@ class Coder extends AbiCoder {
         })
     }
 
-    public encode(types: Array<string|abi.Function.Parameter>, values: any[]): string {
+    public encode(types: Array<string | abi.Function.Parameter>, values: any[]): string {
         try {
             return super.encode(types, values)
         } catch (err) {
@@ -24,7 +24,7 @@ class Coder extends AbiCoder {
         }
     }
 
-    public decode(types: Array<string|abi.Function.Parameter>, data: string): any[] {
+    public decode(types: Array<string | abi.Function.Parameter>, data: string): any[] {
         try {
             return super.decode(types, data)
         } catch (err) {
@@ -194,6 +194,7 @@ export namespace abi {
                     } else {
                         if (input.type === 'string') {
                             topic = '0x' + keccak256(value).toString('hex')
+                            // tslint:disable-next-line:max-line-length
                         } else if (typeof value === 'string' && /^0x[0-9a-f]+$/i.test(value) && value.length % 2 === 0) {
                             // value is encoded
                             topic = '0x' + keccak256(Buffer.from(value.slice(2), 'hex')).toString('hex')
@@ -223,12 +224,12 @@ export namespace abi {
 
             const decodedNonIndexed = coder.decode(
                 this.definition.inputs.filter(t => !t.indexed), data)
-            
+
             const decoded: Decoded = {}
             this.definition.inputs.forEach((t, i) => {
                 if (t.indexed) {
                     const topic = topics.shift()!
-                    decoded[i] = isValueType(t.type) ? decodeParameter(t.type, topic) : topic 
+                    decoded[i] = isValueType(t.type) ? decodeParameter(t.type, topic) : topic
                 } else {
                     decoded[i] = decodedNonIndexed.shift()
                 }
@@ -261,8 +262,8 @@ export namespace abi {
 
     function isValueType(type: string) {
         return (
-            type === "address" ||
-            type === "bool" ||
+            type === 'address' ||
+            type === 'bool' ||
             /^(u?int)(\d*)$/.test(type) ||
             /^bytes(\d+)$/.test(type)
         )

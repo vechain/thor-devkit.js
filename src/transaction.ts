@@ -254,7 +254,7 @@ export namespace Transaction {
 
         let sum = 0
         for (let i = 2; i < data.length; i += 2) {
-            if (data.substring(i, i + 2) === "00") {
+            if (data.substring(i, i + 2) === '00') {
                 sum += zgas
             } else {
                 sum += nzgas

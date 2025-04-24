@@ -19,7 +19,15 @@
         "max-classes-per-file": false,
         "arrow-parens": false,
         "object-literal-sort-keys": false,
-        "trailing-comma": false
+        "trailing-comma": false,
+        "ordered-imports": false,
+        "max-line-length": [
+            true,
+            {
+                "limit": 120,
+                "ignore-pattern": "^\\s*//"
+            }
+        ]
     },
     "rulesDirectory": []
 }
