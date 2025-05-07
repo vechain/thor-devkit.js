@@ -7,9 +7,9 @@ import { Transaction, blake2b256, secp256k1, address } from '../src'
 // tslint:disable:trailing-comma
 
 describe("transaction", () => {
-
     // Correct transaction body
-    const correctTransactionBody: Transaction.Body = {
+    const correctTransactionBody: Transaction.LegacyBody = {
+        type: Transaction.Type.Legacy,
         chainTag: 1,
         blockRef: '0x00000000aabbccdd',
         expiration: 32,
@@ -150,5 +150,80 @@ describe("transaction", () => {
 
         expect(delegated.origin).equal(addr1)
         expect(delegated.delegator).equal(addr2)
+    })
+
+    it('invalid type', () => {
+        const tx = new Transaction({
+            ...correctTransactionBody,
+            type: 1 as any
+        })
+        expect(()=> tx.signingHash()).to.throw("unsupported transaction type: 1")
+    })
+
+    it('decode invalid tx', () => {
+        expect(() => Transaction.decode(Buffer.from([]))).to.throw("typed transaction too short")
+        expect(() => Transaction.decode(Buffer.from([0x00]))).to.throw("transaction type not supported: 0")
+        expect(() => Transaction.decode(Buffer.from([0x01]))).to.throw("transaction type not supported: 1")
+    })
+ 
+    it('legacy without type', () => { 
+        const tx = new Transaction({
+            chainTag: 1,
+            blockRef: '0x00000000aabbccdd',
+            expiration: 32,
+            clauses: [],
+            gasPriceCoef: 128,
+            gas: 21000,
+            dependsOn: null,
+            nonce: 12345678,
+        })
+
+        expect(tx.type).equal(Transaction.Type.Legacy)
+        const decoded = Transaction.decode(tx.encode(), true)
+        expect(decoded.type).equal(Transaction.Type.Legacy)
+        expect(decoded.body.type).equal(Transaction.Type.Legacy)
+    })
+
+    it('dynamic fee tx', () => { 
+        const dynamicFeeBody: Transaction.DynamicFeeBody = {
+            type: Transaction.Type.DynamicFee,
+            chainTag: 1,
+            blockRef: '0x00000000aabbccdd',
+            expiration: 32,
+            clauses: [{
+                to: '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed',
+                value: 10000,
+                data: '0x000000606060'
+            }, {
+                to: '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed',
+                value: 20000,
+                data: '0x000000606060'
+            }],
+            maxFeePerGas: 10000000000001,
+            maxPriorityFeePerGas: 10000000000000,
+            gas: 21000,
+            dependsOn: null,
+            nonce: 12345678,
+        }
+
+        const trx = new Transaction(dynamicFeeBody)
+        const encoded = trx.encode()
+        expect(encoded.toString('hex')).equal('51f8600184aabbccdd20f840df947567d83b7b8d80addcb281a71d54fc7b3364ffed82271086000000606060df947567d83b7b8d80addcb281a71d54fc7b3364ffed824e20860000006060608609184e72a0008609184e72a0018252088083bc614ec0')
+
+        const h = trx.signingHash()
+        expect(h.toString('hex')).equal('4f684b4964abf813b517fd0c10ead43147484f249cf189d1730e9d3ce45d9e3a')
+        expect(Transaction.decode(encoded, true)).deep.equal(trx)
+        
+
+        const priv = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
+        const sig = secp256k1.sign(h, priv)
+        trx.signature = sig
+        expect(trx.origin).equal(address.fromPublicKey(secp256k1.derivePublicKey(priv)))
+
+
+        const signed = trx.encode()
+        expect(signed.toString('hex')).equal('51f8a30184aabbccdd20f840df947567d83b7b8d80addcb281a71d54fc7b3364ffed82271086000000606060df947567d83b7b8d80addcb281a71d54fc7b3364ffed824e20860000006060608609184e72a0008609184e72a0018252088083bc614ec0b8414b71430905849f7e4a099c073d0fc7d600705df90650d9f29c8128513412540b2002ef9d6c0742cff5710ea8bdf8f908966d55fd3c7f328f923467f2c750d16100')
+
+        expect(Transaction.decode(signed)).deep.equal(trx)
     })
 })
