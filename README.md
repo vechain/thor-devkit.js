@@ -8,20 +8,7 @@ Typescript library to aid dApp development on VeChainThor.
 
 ## ⚠️ Repository Notice: End-of-Life (EOL)
 
-**This repository is now archived and has reached its end-of-life (EOL).** We have transitioned to a new and improved repository that will continue to receive updates, support, and new features.
-
-### Important Dates:
-- **Final Version Release:** November 4th, 2024
-- **End-of-Support Date:** December 31st, 2024
-- **Repository Archive Date:** December 31st, 2024
-
-### New Repository
-You can start using the [VeChain SDK](https://github.com/vechain/vechain-sdk-js) for the latest updates and developments.
-
-### Thank You
-Thank you to all contributors and users for supporting this project. We appreciate your interest and encourage you to explore the new repository for ongoing improvements and features.
-
----
+**This repository now has reached its end-of-life (EOL).** We have transitioned to brand new and comprehensive [VeChain SDK](https://github.com/vechain/vechain-sdk-js) that will continue to receive updates, support, and new features.
 
 For any further questions or migration guidance, please reach out using our [support portal](https://support.vechain.org/support/home).
 
@@ -58,7 +45,8 @@ const gas = Transaction.intrinsicGas(clauses)
 console.log(gas)
 // 21000
 
-let body: Transaction.Body = {
+let body: Transaction.LegacyBody = {
+    type: Transaction.Type.Legacy,
     chainTag: 0x9a,
     blockRef: '0x0000000000000000',
     expiration: 32,
@@ -75,6 +63,31 @@ tx.signature = secp256k1.sign(signingHash, /* your private key */)
 
 const raw = tx.encode()
 const decoded = Transaction.decode(raw)
+
+// To create a dynamic fee transaction, use the following:
+let body: Transaction.DynamicFeeBody = {
+    type: Transaction.Type.DynamicFee,
+    chainTag: 0x9a,
+    blockRef: '0x0000000000000000',
+    clauses: clauses,
+    maxPriorityFeePerGas: 1000000000000,
+    maxFeePerGas: 1200000000000,
+    gas,
+    dependsOn: null,
+    nonce: 12345678
+}
+
+const tx = new Transaction(body)
+const signingHash = tx.signingHash()
+tx.signature = secp256k1.sign(signingHash, /* your private key */)
+
+const raw = tx.encode()
+const decoded = Transaction.decode(raw)
+
+// To decode a transaction, use the following:
+const raw = Buffer.from('51cf80808203e8c001018252088080c080', 'hex')
+const unsigned = false
+const decoded = Transaction.decode(raw, unsigned)
 ```
 
 ### Certificate
