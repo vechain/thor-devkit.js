@@ -3,11 +3,18 @@ import { blake2b256 } from './blake2b'
 import { RLP } from './rlp'
 import { secp256k1 } from './secp256k1'
 import { Buffer } from 'buffer'
+import BigNumber from 'bignumber.js'
 
 /** Transaction class defines VeChainThor's multi-clause transaction */
 export class Transaction {
     public static readonly DELEGATED_MASK = 1
+    public static readonly TYPE_LEGACY = '0x00'
+    public static readonly TYPE_DYNAMIC_FEE = '0x02'
 
+    /** decode from Buffer to transaction
+     * @param raw encoded buffer
+     * @param unsigned to indicator if the encoded buffer contains signature
+     */
     /** decode from Buffer to transaction
      * @param raw encoded buffer
      * @param unsigned to indicator if the encoded buffer contains signature
@@ -15,37 +22,89 @@ export class Transaction {
     public static decode(raw: Buffer, unsigned?: boolean) {
         let body: Transaction.Body
         let signature: Buffer | undefined
-        if (unsigned) {
-            body = unsignedTxRLP.decode(raw)
-        } else {
-            const decoded = txRLP.decode(raw)
-            signature = decoded.signature as Buffer
-            delete decoded.signature
-            body = decoded
-        }
 
-        const reserved = body.reserved as Buffer[]
-        if (reserved.length > 0) {
-            if (reserved[reserved.length - 1].length === 0) {
-                throw new Error('invalid reserved fields: not trimmed')
+        // Try decoding as dynamic fee transaction first
+        try {
+            if (unsigned) {
+                body = dynamicFeeTxRLP.decode(raw)
+            } else {
+                const decoded = dynamicFeeTxRLP.decode(raw)
+                signature = decoded.signature as Buffer
+                delete decoded.signature
+                body = decoded
             }
 
-            const features = featuresKind.buffer(reserved[0], 'reserved.features').decode() as number
-            body.reserved = {
-                features
+            // If type is dynamic fee, process it
+            if (body.type === Transaction.TYPE_DYNAMIC_FEE) {
+                // Process reserved fields
+                const reserved = body.reserved as Buffer[]
+                if (reserved.length > 0) {
+                    if (reserved[reserved.length - 1].length === 0) {
+                        throw new Error('invalid reserved fields: not trimmed')
+                    }
+
+                    const features = featuresKind.buffer(reserved[0], 'reserved.features').decode() as number
+                    body.reserved = {
+                        features
+                    }
+                    if (reserved.length > 1) {
+                        body.reserved.unused = reserved.slice(1)
+                    }
+                } else {
+                    delete body.reserved
+                }
+
+                const tx = new Transaction(body)
+                if (signature) {
+                    tx.signature = signature
+                }
+                return tx
             }
-            if (reserved.length > 1) {
-                body.reserved.unused = reserved.slice(1)
-            }
-        } else {
-            delete body.reserved
+        } catch {
+            console.log("failed")
+            // If dynamic fee decoding fails, try legacy format
         }
 
-        const tx = new Transaction(body)
-        if (signature) {
-            tx.signature = signature
+        // Legacy transaction decoding
+        try {
+            if (unsigned) {
+                body = unsignedTxRLP.decode(raw)
+            } else {
+                const decoded = txRLP.decode(raw)
+                signature = decoded.signature as Buffer
+                delete decoded.signature
+                body = decoded
+            }
+
+            // Process reserved fields
+            const reserved = body.reserved as Buffer[]
+            if (reserved.length > 0) {
+                if (reserved[reserved.length - 1].length === 0) {
+                    throw new Error('invalid reserved fields: not trimmed')
+                }
+
+                const features = featuresKind.buffer(reserved[0], 'reserved.features').decode() as number
+                body.reserved = {
+                    features
+                }
+                if (reserved.length > 1) {
+                    body.reserved.unused = reserved.slice(1)
+                }
+            } else {
+                delete body.reserved
+            }
+
+            // Set type to legacy for backward compatibility
+            body.type = Transaction.TYPE_LEGACY
+
+            const tx = new Transaction(body)
+            if (signature) {
+                tx.signature = signature
+            }
+            return tx
+        } catch (error) {
+            throw new Error(`Failed to decode transaction: ${error.message}`)
         }
-        return tx
     }
 
     public readonly body: Transaction.Body
@@ -59,6 +118,30 @@ export class Transaction {
      */
     constructor(body: Transaction.Body) {
         this.body = { ...body }
+        this.validateTransactionType()
+    }
+
+    private validateTransactionType() {
+        const type = this.body.type
+        if (!type) {
+            this.body.type = Transaction.TYPE_LEGACY
+            return
+        }
+
+        if (type !== Transaction.TYPE_LEGACY && type !== Transaction.TYPE_DYNAMIC_FEE) {
+            throw new Error('Invalid transaction type')
+        }
+
+        if (type === Transaction.TYPE_DYNAMIC_FEE) {
+            if (!this.body.maxFeePerGas || !this.body.maxPriorityFeePerGas) {
+                throw new Error('Dynamic fee transaction requires maxFeePerGas and maxPriorityFeePerGas')
+            }
+            delete this.body.gasPriceCoef
+        } else {
+            if (this.body.maxFeePerGas || this.body.maxPriorityFeePerGas) {
+                throw new Error('Legacy transaction should not include dynamic fee fields')
+            }
+        }
     }
 
     /**
@@ -89,7 +172,13 @@ export class Transaction {
      */
     public signingHash(delegateFor?: string) {
         const reserved = this._encodeReserved()
-        const buf = unsignedTxRLP.encode({ ...this.body, reserved })
+
+        let buf;
+        if (this.body.type === Transaction.TYPE_DYNAMIC_FEE) {
+            buf = dynamicFeeTxRLP.encode({ ...this.body, reserved })
+        } else {
+            buf = unsignedTxRLP.encode({ ...this.body, reserved })
+        }
         const hash = blake2b256(buf)
 
         if (delegateFor) {
@@ -150,14 +239,42 @@ export class Transaction {
         return Transaction.intrinsicGas(this.body.clauses)
     }
 
+    public static createLegacyTransaction(body: Omit<Transaction.Body, 'type' | 'maxFeePerGas' | 'maxPriorityFeePerGas'>) {
+        return new Transaction({
+            ...body,
+            type: Transaction.TYPE_LEGACY
+        })
+    }
+
+    public static createDynamicFeeTransaction(
+        body: Omit<Transaction.Body, 'type' | 'gasPriceCoef'>,
+        maxFeePerGas: string,
+        maxPriorityFeePerGas: string
+    ) {
+        return new Transaction({
+            ...body,
+            type: Transaction.TYPE_DYNAMIC_FEE,
+            maxFeePerGas,
+            maxPriorityFeePerGas
+        })
+    }
+
     /** encode into Buffer */
     public encode() {
         const reserved = this._encodeReserved()
-        if (this.signature) {
-            return txRLP.encode({ ...this.body, reserved, signature: this.signature })
+        const body = { ...this.body, reserved }
+
+        if (this.body.type === Transaction.TYPE_DYNAMIC_FEE) {
+            if (this.signature) {
+                return dynamicFeeTxRLP.encode({ ...body, signature: this.signature })
+            }
+            return dynamicFeeTxRLP.encode(body)
         }
 
-        return unsignedTxRLP.encode({ ...this.body, reserved })
+        if (this.signature) {
+            return txRLP.encode({ ...body, signature: this.signature })
+        }
+        return unsignedTxRLP.encode(body)
     }
 
     private _encodeReserved() {
@@ -208,14 +325,20 @@ export namespace Transaction {
         expiration: number
         /** array of clauses */
         clauses: Clause[]
-        /** coef applied to base gas price [0,255] */
-        gasPriceCoef: number
+        /** Legacy gas price coefficient [0,255] */
+        gasPriceCoef?: number
         /** max gas provided for execution */
         gas: string | number
         /** ID of another tx that is depended */
         dependsOn: string | null
         /** nonce value for various purposes */
         nonce: string | number
+        /** Transaction type: '0x0' for legacy, '0x2' for dynamic fee */
+        type?: string
+        /** Maximum fee per gas (in wei) for dynamic fee transactions */
+        maxFeePerGas?: string
+        /** Maximum priority fee per gas (in wei) for dynamic fee transactions */
+        maxPriorityFeePerGas?: string
 
         reserved?: {
             /** tx feature bits */
@@ -262,6 +385,17 @@ export namespace Transaction {
         }
         return sum
     }
+
+    export function calculateMaxFeePerGas(baseFee: string, maxPriorityFeePerGas: string): string {
+        const baseFeeBN = new BigNumber(baseFee)
+        const maxPriorityFeePerGasBN = new BigNumber(maxPriorityFeePerGas)
+        return baseFeeBN.plus(maxPriorityFeePerGasBN).toString()
+    }
+
+    export function estimateMaxPriorityFeePerGas(networkPriorityFee: string, multiplier: number = 1.1): string {
+        const networkFeeBN = new BigNumber(networkPriorityFee)
+        return networkFeeBN.times(multiplier).toString()
+    }
 }
 
 const unsignedTxRLP = new RLP({
@@ -283,6 +417,31 @@ const unsignedTxRLP = new RLP({
         { name: 'gas', kind: new RLP.NumericKind(8) },
         { name: 'dependsOn', kind: new RLP.NullableFixedBlobKind(32) },
         { name: 'nonce', kind: new RLP.NumericKind(8) },
+        { name: 'reserved', kind: { item: new RLP.BufferKind() } },
+    ],
+})
+
+const dynamicFeeTxRLP = new RLP({
+    name: 'tx',
+    kind: [
+        { name: 'chainTag', kind: new RLP.NumericKind(1) },
+        { name: 'blockRef', kind: new RLP.CompactFixedBlobKind(8) },
+        { name: 'expiration', kind: new RLP.NumericKind(4) },
+        {
+            name: 'clauses', kind: {
+                item: [
+                    { name: 'to', kind: new RLP.NullableFixedBlobKind(20) },
+                    { name: 'value', kind: new RLP.NumericKind(32) },
+                    { name: 'data', kind: new RLP.BlobKind() },
+                ],
+            },
+        },
+        { name: 'gas', kind: new RLP.NumericKind(8) },
+        { name: 'dependsOn', kind: new RLP.NullableFixedBlobKind(32) },
+        { name: 'nonce', kind: new RLP.NumericKind(8) },
+        { name: 'type', kind: new RLP.NullableFixedBlobKind(1) },
+        { name: 'maxFeePerGas', kind: new RLP.NumericKind(32) },
+        { name: 'maxPriorityFeePerGas', kind: new RLP.NumericKind(32) },
         { name: 'reserved', kind: { item: new RLP.BufferKind() } },
     ],
 })

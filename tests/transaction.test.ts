@@ -151,4 +151,150 @@ describe("transaction", () => {
         expect(delegated.origin).equal(addr1)
         expect(delegated.delegator).equal(addr2)
     })
+
+    describe('dynamic fee transaction', () => {
+        // Dynamic fee transaction body
+        const dynamicFeeBody: Transaction.Body = {
+            chainTag: 1,
+            blockRef: '0x00000000aabbccdd',
+            expiration: 32,
+            clauses: [{
+                to: '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed',
+                value: 10000,
+                data: '0x000000606060'
+            }],
+            gas: 21000,
+            dependsOn: null,
+            nonce: 12345678,
+            type: Transaction.TYPE_DYNAMIC_FEE,
+            maxFeePerGas: '0x2540be400', // 10 Gwei
+            maxPriorityFeePerGas: '0x3b9aca00' // 1 Gwei
+        }
+
+        // Create unsigned dynamic fee transaction
+        const unsignedDynamicFee = new Transaction(dynamicFeeBody)
+
+        it('creates dynamic fee transaction', () => {
+            expect(unsignedDynamicFee.body.type).equal(Transaction.TYPE_DYNAMIC_FEE)
+            expect(unsignedDynamicFee.body.maxFeePerGas).equal('0x2540be400')
+            expect(unsignedDynamicFee.body.maxPriorityFeePerGas).equal('0x3b9aca00')
+            expect(unsignedDynamicFee.body.gasPriceCoef).equal(undefined)
+        })
+
+        it('validates dynamic fee fields', () => {
+            expect(() => new Transaction({
+                ...dynamicFeeBody,
+                maxFeePerGas: undefined
+            })).to.throw('Dynamic fee transaction requires maxFeePerGas and maxPriorityFeePerGas')
+
+            expect(() => new Transaction({
+                ...dynamicFeeBody,
+                maxPriorityFeePerGas: undefined
+            })).to.throw('Dynamic fee transaction requires maxFeePerGas and maxPriorityFeePerGas')
+
+            expect(() => new Transaction({
+                ...dynamicFeeBody,
+                type: '0x1'
+            })).to.throw('Invalid transaction type')
+
+            const body = {
+                ...dynamicFeeBody,
+                gasPriceCoef: 128
+            }
+            const tx = new Transaction({
+                ...dynamicFeeBody,
+                gasPriceCoef: 128
+            })
+            expect(tx.body.gasPriceCoef).equal(undefined)
+        })
+
+        it('encodes and decodes dynamic fee transaction', () => {
+            const encoded = unsignedDynamicFee.encode()
+            const decoded = Transaction.decode(encoded, true)
+
+            expect(decoded.body.type).equal(Transaction.TYPE_DYNAMIC_FEE)
+            expect(decoded.body.maxFeePerGas).equal(10000000000)
+            expect(decoded.body.maxPriorityFeePerGas).equal(1000000000)
+            expect(decoded.body.gasPriceCoef).equal(undefined)
+        })
+
+        it('signs and verifies dynamic fee transaction', () => {
+            const privKey = Buffer.from('7582be841ca040aa940fff6c05773129e135623e41acce3e0b8ba520dc1ae26a', 'hex')
+            const tx = new Transaction(dynamicFeeBody)
+
+            const signingHash = tx.signingHash()
+            tx.signature = secp256k1.sign(signingHash, privKey)
+
+            const signer = address.fromPublicKey(secp256k1.derivePublicKey(privKey))
+            expect(tx.origin).equal(signer)
+            expect(tx.id).to.not.equal(null)
+        })
+
+        it('handles dynamic fee transaction with delegation', () => {
+            const delegatedDynamicFee = new Transaction({
+                ...dynamicFeeBody,
+                reserved: {
+                    features: 1
+                }
+            })
+
+            const priv1 = secp256k1.generatePrivateKey()
+            const priv2 = secp256k1.generatePrivateKey()
+            const addr1 = address.fromPublicKey(secp256k1.derivePublicKey(priv1))
+            const addr2 = address.fromPublicKey(secp256k1.derivePublicKey(priv2))
+
+            const hash = delegatedDynamicFee.signingHash()
+            const dhash = delegatedDynamicFee.signingHash(addr1)
+
+            const sig = Buffer.concat([
+                secp256k1.sign(hash, priv1),
+                secp256k1.sign(dhash, priv2)
+            ])
+
+            delegatedDynamicFee.signature = sig
+
+            expect(delegatedDynamicFee.origin).equal(addr1)
+            expect(delegatedDynamicFee.delegator).equal(addr2)
+            expect(delegatedDynamicFee.delegated).equal(true)
+        })
+
+        it('calculates fees correctly', () => {
+            const baseFee = '0x2540be400' // 10 Gwei
+            const maxPriorityFeePerGas = '0x3b9aca00' // 1 Gwei
+
+            const maxFeePerGas = Transaction.calculateMaxFeePerGas(baseFee, maxPriorityFeePerGas)
+            expect(maxFeePerGas).equal("11000000000") // 11 Gwei (10 + 1)
+
+            const estimatedPriorityFee = Transaction.estimateMaxPriorityFeePerGas('0x3b9aca00', 1.1)
+            expect(estimatedPriorityFee).equal('1100000000') // 1.1 Gwei
+        })
+
+        it('handles mixed transaction types', () => {
+            // Legacy transaction
+            const body = { ...dynamicFeeBody }
+            delete body.maxPriorityFeePerGas
+            delete body.maxFeePerGas
+            const legacyTx = Transaction.createLegacyTransaction({
+                ...body,
+                gasPriceCoef: 128
+            })
+            expect(legacyTx.body.type).equal(Transaction.TYPE_LEGACY)
+            expect(legacyTx.body.gasPriceCoef).equal(128)
+            expect(legacyTx.body.maxFeePerGas).equal(undefined)
+            expect(legacyTx.body.maxPriorityFeePerGas).equal(undefined)
+
+            // Dynamic fee transaction
+            const dynamicFeeTx = Transaction.createDynamicFeeTransaction(
+                {
+                    ...dynamicFeeBody
+                },
+                '0x2540be400',
+                '0x3b9aca00'
+            )
+            expect(dynamicFeeTx.body.type).equal(Transaction.TYPE_DYNAMIC_FEE)
+            expect(dynamicFeeTx.body.gasPriceCoef).equal(undefined)
+            expect(dynamicFeeTx.body.maxFeePerGas).equal('0x2540be400')
+            expect(dynamicFeeTx.body.maxPriorityFeePerGas).equal('0x3b9aca00')
+        })
+    })
 })
