@@ -82,7 +82,7 @@
     "@vechain/ethers": "^4.0.27-5",
     "bignumber.js": "^7.2.1",
     "blakejs": "^1.1.2",
-    "elliptic": "6.5.4",
+    "elliptic": "^6.6.1",
     "fast-json-stable-stringify": "^2.1.0",
     "js-sha3": "0.5.7",
     "rlp": "^2.0.0"
