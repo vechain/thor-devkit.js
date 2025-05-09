@@ -65,7 +65,7 @@ const raw = tx.encode()
 const decoded = Transaction.decode(raw)
 
 // To create a dynamic fee transaction, use the following:
-let body: Transaction.DynamicFeeBody = {
+let body = {
     type: Transaction.Type.DynamicFee,
     chainTag: 0x9a,
     blockRef: '0x0000000000000000',

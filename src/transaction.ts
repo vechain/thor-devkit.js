@@ -5,7 +5,7 @@ import { secp256k1 } from './secp256k1'
 import { Buffer } from 'buffer'
 
 /** Transaction class defines VeChainThor's multi-clause transaction */
-export class Transaction {
+export class Transaction<T extends Transaction.LegacyBody | Transaction.DynamicFeeBody> {
     public static readonly DELEGATED_MASK = 1
 
     /** decode from Buffer to transaction
@@ -29,7 +29,7 @@ export class Transaction {
             }
         }
 
-        let body: Transaction.Body
+        let body: Transaction.LegacyBody | Transaction.DynamicFeeBody
         let signature: Buffer | undefined
         if (unsigned) {
             body = type === Transaction.Type.DynamicFee ?
@@ -71,7 +71,7 @@ export class Transaction {
         return tx
     }
 
-    public readonly body: Transaction.Body
+    public readonly body: T
 
     /** signature to transaction */
     public signature?: Buffer
@@ -80,7 +80,7 @@ export class Transaction {
      * construct a transaction object with given body
      * @param body body of tx
      */
-    constructor(body: Transaction.Body) {
+    constructor(body: T) {
         this.body = { ...body }
     }
 
@@ -107,8 +107,8 @@ export class Transaction {
 
     /** returns transaction type, type legacy will return if type is not set */
     get type() {
-        if (this.body.type && this.body.type === Transaction.Type.DynamicFee) {
-            return Transaction.Type.DynamicFee
+        if (this.body.hasOwnProperty('type') && this.body.type !== undefined) {
+            return this.body.type
         }
         return Transaction.Type.Legacy
     }
@@ -256,8 +256,6 @@ export namespace Transaction {
         Legacy = 0,
         DynamicFee = 81,
     }
-
-    export type Body = LegacyBody | DynamicFeeBody
 
     /** legacy transaction body type */
     export interface LegacyBody {
