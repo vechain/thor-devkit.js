@@ -1,5 +1,7 @@
 import { expect } from 'chai'
+import { randomBytes } from 'crypto'
 import { blake2b256, keccak256, address, secp256k1, Keystore, mnemonic, HDNode } from '../src'
+import { ec as EC } from 'elliptic'
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
@@ -78,6 +80,38 @@ describe('secp256k1', () => {
         expect(() => secp256k1.recover(invalidMessageHash, sig)).to.throw(Error, 'invalid message hash')
         expect(() => secp256k1.recover(msgHash, invalidSignature)).to.throw(Error, 'invalid signature')
         expect(() => secp256k1.recover(msgHash, validSignatureWithWrongRecovery)).to.throw(Error, 'invalid signature recovery')
+    })
+})
+
+describe('secp256k1 low S enforcement test', () => {
+    it('test signature low S', () => {
+        // secp256k1 curve order N
+        const SECP256K1_N = BigInt(new EC('secp256k1').n!.toString());
+        // N/2 - the threshold for low-S
+        const SECP256K1_HALF_N = SECP256K1_N / BigInt(2);
+        /**
+         * Check if a signature has low-S value
+         * @param signature - The 65-byte signature (r: 32 bytes, s: 32 bytes, v: 1 byte)
+         * @returns true if S <= N/2
+         */
+        function isLowS(signature: Buffer): boolean {
+          if (signature.length < 64) {
+            throw new Error("Invalid signature length");
+          }
+          // S is bytes 32-64
+          const sBytes = signature.slice(32, 64);
+          const s = BigInt("0x" + sBytes.toString("hex"));
+          return s <= SECP256K1_HALF_N;
+        }
+        
+        // 100 rounds of random signature generation and validation
+        const rounds = 100
+        for (let i = 0; i < rounds; i++) {
+            const privKey = secp256k1.generatePrivateKey()
+            const msgHash = randomBytes(32)
+            const sig = secp256k1.sign(msgHash, privKey)
+            expect(isLowS(sig)).equal(true)
+        }
     })
 })
 
