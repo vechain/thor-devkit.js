@@ -219,7 +219,7 @@ describe('abi', () => {
         expect(() => abi.encodeParameter('WRONG', 10)).to.throw()
         
         // Exception on decoding
-        expect(() => abi.decodeParameter('uint256', 'WRONG_UINT')).to.throw(Error, "invalid hexidecimal string")
+        expect(() => abi.decodeParameter('uint256', 'WRONG_UINT')).to.throw(Error)
     })
 
     it('function', () => {
@@ -392,6 +392,39 @@ describe('abi', () => {
             expect(v.endorsor).to.be.equal(nodes[i].endorsor)
             expect(v.identity).to.be.equal(nodes[i].identity)
             expect(v.active).to.be.equal(nodes[i].active)
+        })
+    })
+
+    describe('encodeParameters / decodeParameters', () => {
+        it('direct call with named fields', () => {
+            const types: abi.Function.Parameter[] = [
+                { name: 'to', type: 'address' },
+                { name: 'amount', type: 'uint256' },
+            ]
+            const values = ['0xd3ae78222beadb038203be21ed5ce7c9b1bff602', '1000']
+            const encoded = abi.encodeParameters(types, values)
+            const decoded = abi.decodeParameters(types, encoded)
+            // index access
+            expect(decoded[0]).equal('0xd3ae78222beadb038203be21ed5ce7c9b1bff602')
+            expect(decoded[1]).equal('1000')
+            // named field access
+            expect(decoded['to']).equal(decoded[0])
+            expect(decoded['amount']).equal(decoded[1])
+        })
+
+        it('returns lowercase address', () => {
+            const types: abi.Function.Parameter[] = [{ name: 'addr', type: 'address' }]
+            const encoded = abi.encodeParameters(types,
+                ['0xD3AE78222BEADB038203BE21ED5CE7C9B1BFF602'])
+            const decoded = abi.decodeParameters(types, encoded)
+            expect(decoded['addr']).equal('0xd3ae78222beadb038203be21ed5ce7c9b1bff602')
+        })
+
+        it('throws on invalid encode input', () => {
+            expect(() => abi.encodeParameters(
+                [{ name: 'x', type: 'uint256' }],
+                ['not-a-number']
+            )).to.throw(Error)
         })
     })
 })

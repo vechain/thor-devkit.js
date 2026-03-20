@@ -1,4 +1,4 @@
-import * as HD from '@vechain/ethers/utils/hdnode'
+import { Mnemonic } from 'ethers'
 import { randomBytes } from 'crypto'
 import { HDNode } from './hdnode'
 
@@ -10,7 +10,7 @@ export namespace mnemonic {
      */
     export function generate(rng?: () => Buffer) {
         rng = rng ?? (() => randomBytes(128 / 8))
-        return HD.entropyToMnemonic(rng()).split(' ')
+        return Mnemonic.fromEntropy(Uint8Array.from(rng())).phrase.split(' ')
     }
 
     /**
@@ -18,7 +18,7 @@ export namespace mnemonic {
      * @param words mnemonic words
      */
     export function validate(words: string[]) {
-        return HD.isValidMnemonic(words.join(' '))
+        return Mnemonic.isValidMnemonic(words.join(' '))
     }
 
     /**

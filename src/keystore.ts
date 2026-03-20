@@ -1,4 +1,4 @@
-import * as SecretStorage from '@vechain/ethers/utils/secret-storage'
+import { encryptKeystoreJson, decryptKeystoreJson, computeAddress } from 'ethers'
 import { Buffer } from 'buffer'
 
 /** to present encrypted private key in Ethereum keystore format. */
@@ -16,15 +16,13 @@ export namespace Keystore {
      * @param password password to encrypt the private key
      */
     export function encrypt(privateKey: Buffer, password: string) {
-        return SecretStorage.encrypt(
-            '0x' + privateKey.toString('hex'),
-            password, {
-            scrypt: {
-                N: 131072,
-                p: 1,
-                r: 8
-            }
-        }).then(str => normalize(JSON.parse(str)))
+        const hexKey = '0x' + privateKey.toString('hex')
+        const addr = computeAddress(hexKey).toLowerCase()
+        return encryptKeystoreJson(
+            { address: addr, privateKey: hexKey },
+            password,
+            { scrypt: { N: 131072, p: 1, r: 8 } }
+        ).then(str => normalize(JSON.parse(str)))
     }
 
     /**
@@ -34,7 +32,7 @@ export namespace Keystore {
      * @param password password to decrypt keystore
      */
     export function decrypt(ks: Keystore, password: string) {
-        return SecretStorage.decrypt(JSON.stringify(ks), password)
+        return decryptKeystoreJson(JSON.stringify(ks), password)
             .then(sk => Buffer.from(sk.privateKey.slice(2), 'hex'))
     }
 

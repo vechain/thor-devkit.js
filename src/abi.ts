@@ -1,54 +1,52 @@
-import { AbiCoder, formatSignature as _formatSignature } from '@vechain/ethers/utils/abi-coder'
+import { AbiCoder, Fragment, ParamType } from 'ethers'
 import { keccak256 } from './keccak'
 import { Buffer } from 'buffer'
 
-class Coder extends AbiCoder {
-    constructor() {
-        super((type, value) => {
-            if ((type.match(/^u?int/) && !Array.isArray(value) && typeof value !== 'object') ||
-                value._ethersType === 'BigNumber') {
-                return value.toString()
-            }
-            return value
+const _coder = new AbiCoder()
+
+function processDecoded(type: ParamType, value: any): any {
+    if (type.baseType === 'address')
+        return (value as string).toLowerCase()
+    if (type.baseType.startsWith('uint') || type.baseType.startsWith('int'))
+        return (value as bigint).toString()
+    if (type.baseType === 'array')
+        return (value as any[]).map((v: any) => processDecoded(type.arrayChildren!, v))
+    if (type.baseType === 'tuple') {
+        const processed = (value as any[]).map((v: any, i: number) =>
+            processDecoded(type.components![i], v))
+        type.components!.forEach((comp, i) => {
+            if (comp.name) { (processed as any)[comp.name] = processed[i] }
         })
+        return processed
     }
-
-    public encode(types: Array<string | abi.Function.Parameter>, values: any[]): string {
-        try {
-            return super.encode(types, values)
-        } catch (err) {
-            if (err.reason) {
-                throw new Error(err.reason)
-            }
-            throw err
-        }
-    }
-
-    public decode(types: Array<string | abi.Function.Parameter>, data: string): any[] {
-        try {
-            return super.decode(types, data)
-        } catch (err) {
-            if (err.reason) {
-                throw new Error(err.reason)
-            }
-            throw err
-        }
-    }
+    return value
 }
 
-const coder = new Coder()
+function toParamType(t: string | abi.Function.Parameter): ParamType {
+    return typeof t === 'string'
+        ? ParamType.from(t)
+        : ParamType.from({ name: t.name, type: t.type, components: t.components })
+}
 
-function formatSignature(fragment: any) {
+function encodeValues(types: Array<string | abi.Function.Parameter>, values: any[]): string {
     try {
-        return _formatSignature(fragment)
-            .replace(/\(tuple\(/g, '((')
-            .replace(/,tuple\(/g, ',(')
-    } catch (err) {
-        if (err.reason) {
-            throw new Error(err.reason)
-        }
-        throw err
-    }
+        return _coder.encode(types.map(toParamType), values)
+    } catch (err: any) { throw new Error(err.message ?? String(err)) }
+}
+
+function decodeValues(types: Array<string | abi.Function.Parameter>, data: string): any[] {
+    if (types.length === 0) return []
+    try {
+        const pts = types.map(toParamType)
+        const raw = _coder.decode(pts, data)
+        return pts.map((pt, i) => processDecoded(pt, raw[i]))
+    } catch (err: any) { throw new Error(err.message ?? String(err)) }
+}
+
+function formatSignature(fragment: abi.Function.Definition | abi.Event.Definition): string {
+    try {
+        return Fragment.from(fragment as any).format('sighash')
+    } catch (err: any) { throw new Error(err.message ?? String(err)) }
 }
 
 /** encode/decode parameters of contract function call, event log, according to ABI JSON */
@@ -61,7 +59,7 @@ export namespace abi {
      * @returns encoded value in hex string
      */
     export function encodeParameter(type: string, value: any) {
-        return coder.encode([type], [value])
+        return encodeValues([type], [value])
     }
 
     /**
@@ -71,7 +69,7 @@ export namespace abi {
      * @returns decoded value
      */
     export function decodeParameter(type: string, data: string) {
-        return coder.decode([type], data)[0]
+        return decodeValues([type], data)[0]
     }
 
     /**
@@ -81,7 +79,7 @@ export namespace abi {
      * @returns encoded values in hex string
      */
     export function encodeParameters(types: Function.Parameter[], values: any[]) {
-        return coder.encode(types, values)
+        return encodeValues(types, values)
     }
 
     /**
@@ -91,7 +89,7 @@ export namespace abi {
      * @returns decoded object
      */
     export function decodeParameters(types: Function.Parameter[], data: string) {
-        const result = coder.decode(types, data)
+        const result = decodeValues(types, data)
         const decoded: Decoded = {}
         types.forEach((t, i) => {
             decoded[i] = result[i]
@@ -222,7 +220,7 @@ export namespace abi {
                 throw new Error('invalid topics count')
             }
 
-            const decodedNonIndexed = coder.decode(
+            const decodedNonIndexed = decodeValues(
                 this.definition.inputs.filter(t => !t.indexed), data)
 
             const decoded: Decoded = {}
