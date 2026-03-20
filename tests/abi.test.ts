@@ -426,5 +426,41 @@ describe('abi', () => {
                 ['not-a-number']
             )).to.throw(Error)
         })
+
+        it('decodes dynamic array (bytes32[])', () => {
+            const types: abi.Function.Parameter[] = [{ name: 'hashes', type: 'bytes32[]' }]
+            const input = [
+                '0xdf32340000000000000000000000000000000000000000000000000000000000',
+                '0xfdfd000000000000000000000000000000000000000000000000000000000000',
+            ]
+            const encoded = abi.encodeParameters(types, [input])
+            const decoded = abi.decodeParameters(types, encoded)
+            expect(decoded['hashes']).deep.equal(input)
+        })
+
+        it('decodes fixed-length array (uint256[3])', () => {
+            const types: abi.Function.Parameter[] = [{ name: 'amounts', type: 'uint256[3]' }]
+            const encoded = abi.encodeParameters(types, [['100', '200', '300']])
+            const decoded = abi.decodeParameters(types, encoded)
+            expect(decoded['amounts']).deep.equal(['100', '200', '300'])
+        })
+
+        it('decodes bare tuple with named fields', () => {
+            const types: abi.Function.Parameter[] = [{
+                name: 'info',
+                type: 'tuple',
+                components: [
+                    { name: 'owner', type: 'address' },
+                    { name: 'value', type: 'uint256' },
+                ],
+            }]
+            const encoded = abi.encodeParameters(types,
+                [['0xd3ae78222beadb038203be21ed5ce7c9b1bff602', '42']])
+            const decoded = abi.decodeParameters(types, encoded)
+            expect(decoded['info']['owner']).equal('0xd3ae78222beadb038203be21ed5ce7c9b1bff602')
+            expect(decoded['info']['value']).equal('42')
+            expect(decoded['info'][0]).equal(decoded['info']['owner'])
+            expect(decoded['info'][1]).equal(decoded['info']['value'])
+        })
     })
 })
