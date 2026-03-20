@@ -445,6 +445,30 @@ describe('abi', () => {
             expect(decoded['amounts']).deep.equal(['100', '200', '300'])
         })
 
+        it('decodes tuple[] (array of tuples)', () => {
+            const types: abi.Function.Parameter[] = [{
+                name: 'transfers',
+                type: 'tuple[]',
+                components: [
+                    { name: 'to', type: 'address' },
+                    { name: 'amount', type: 'uint256' },
+                ],
+            }]
+            const input = [
+                { to: '0xd3ae78222beadb038203be21ed5ce7c9b1bff602', amount: '100' },
+                { to: '0xabc0000000000000000000000000000000000001', amount: '200' },
+            ]
+            const encoded = abi.encodeParameters(types, [input])
+            const decoded = abi.decodeParameters(types, encoded)
+            expect(decoded['transfers'].length).equal(2)
+            decoded['transfers'].forEach((item: any, i: number) => {
+                expect(item['to']).equal(input[i].to)
+                expect(item['amount']).equal(input[i].amount)
+                expect(item[0]).equal(item['to'])
+                expect(item[1]).equal(item['amount'])
+            })
+        })
+
         it('decodes bare tuple with named fields', () => {
             const types: abi.Function.Parameter[] = [{
                 name: 'info',
