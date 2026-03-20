@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { abi, keccak256 } from "../src"
+import { abi, keccak256 } from '../src'
 
 // tslint:disable:quotemark
 // tslint:disable:object-literal-key-quotes
@@ -22,176 +22,176 @@ describe('abi', () => {
     //     event Added(AuthorityUtils.Candidate[] nodes)
     // }
     const f1 = new abi.Function({
-        "constant": false,
-        "inputs": [
+        'constant': false,
+        'inputs': [
             {
-                "name": "a1",
-                "type": "uint256"
+                'name': 'a1',
+                'type': 'uint256'
             },
             {
-                "name": "a2",
-                "type": "string"
+                'name': 'a2',
+                'type': 'string'
             }
         ],
-        "name": "f1",
-        "outputs": [
+        'name': 'f1',
+        'outputs': [
             {
-                "name": "r1",
-                "type": "address"
+                'name': 'r1',
+                'type': 'address'
             },
             {
-                "name": "r2",
-                "type": "bytes"
+                'name': 'r2',
+                'type': 'bytes'
             }
         ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
+        'payable': false,
+        'stateMutability': 'nonpayable',
+        'type': 'function'
     })
 
     const f2 = new abi.Function({
-        "inputs": [],
-        "name": "nodes",
-        "payable": false,
-        "outputs": [
+        'inputs': [],
+        'name': 'nodes',
+        'payable': false,
+        'outputs': [
             {
-                "components": [
+                'components': [
                     {
-                        "internalType": "address",
-                        "name": "master",
-                        "type": "address"
+                        'internalType': 'address',
+                        'name': 'master',
+                        'type': 'address'
                     },
                     {
-                        "internalType": "address",
-                        "name": "endorsor",
-                        "type": "address"
+                        'internalType': 'address',
+                        'name': 'endorsor',
+                        'type': 'address'
                     },
                     {
-                        "internalType": "bytes32",
-                        "name": "identity",
-                        "type": "bytes32"
+                        'internalType': 'bytes32',
+                        'name': 'identity',
+                        'type': 'bytes32'
                     },
                     {
-                        "internalType": "bool",
-                        "name": "active",
-                        "type": "bool"
+                        'internalType': 'bool',
+                        'name': 'active',
+                        'type': 'bool'
                     }
                 ],
-                "internalType": "struct AuthorityUtils.Candidate[]",
-                "name": "list",
-                "type": "tuple[]"
+                'internalType': 'struct AuthorityUtils.Candidate[]',
+                'name': 'list',
+                'type': 'tuple[]'
             }
         ],
-        "stateMutability": "nonpayable",
-        "type": "function"
+        'stateMutability': 'nonpayable',
+        'type': 'function'
     })
 
     const e1 = new abi.Event({
-        "anonymous": false,
-        "inputs": [
+        'anonymous': false,
+        'inputs': [
             {
-                "indexed": true,
-                "name": "a1",
-                "type": "uint256"
+                'indexed': true,
+                'name': 'a1',
+                'type': 'uint256'
             },
             {
-                "indexed": false,
-                "name": "a2",
-                "type": "string"
+                'indexed': false,
+                'name': 'a2',
+                'type': 'string'
             }
         ],
-        "name": "E1",
-        "type": "event"
+        'name': 'E1',
+        'type': 'event'
     })
 
     const e2 = new abi.Event({
-        "anonymous": true,
-        "inputs": [
+        'anonymous': true,
+        'inputs': [
             {
-                "indexed": true,
-                "name": "a1",
-                "type": "uint256"
+                'indexed': true,
+                'name': 'a1',
+                'type': 'uint256'
             },
             {
-                "indexed": false,
-                "name": "a2",
-                "type": "string"
+                'indexed': false,
+                'name': 'a2',
+                'type': 'string'
             }
         ],
-        "name": "E2",
-        "type": "event"
+        'name': 'E2',
+        'type': 'event'
     })
 
     const e3 = new abi.Event({
-        "anonymous": false,
-        "inputs": [
+        'anonymous': false,
+        'inputs': [
             {
-                "indexed": true,
-                "name": "a1",
-                "type": "uint256"
+                'indexed': true,
+                'name': 'a1',
+                'type': 'uint256'
             }
         ],
-        "name": "E3",
-        "type": "event"
+        'name': 'E3',
+        'type': 'event'
     })
     const e4 = new abi.Event({
-        "inputs": [
+        'inputs': [
             {
-                "indexed": true,
-                "name": "a1",
-                "type": "string"
+                'indexed': true,
+                'name': 'a1',
+                'type': 'string'
             }
         ],
-        "name": "E4",
-        "type": "event"
+        'name': 'E4',
+        'type': 'event'
     })
 
     const e5 = new abi.Event({
-        "inputs": [
+        'inputs': [
             {
-                "indexed": true,
-                "name": "a1",
-                "type": "bytes"
+                'indexed': true,
+                'name': 'a1',
+                'type': 'bytes'
             }
         ],
-        "name": "E5",
-        "type": "event"
+        'name': 'E5',
+        'type': 'event'
     })
 
     const e6 = new abi.Event({
-        "anonymous": false,
-        "inputs": [
+        'anonymous': false,
+        'inputs': [
             {
-                "components": [
+                'components': [
                     {
-                        "internalType": "address",
-                        "name": "master",
-                        "type": "address"
+                        'internalType': 'address',
+                        'name': 'master',
+                        'type': 'address'
                     },
                     {
-                        "internalType": "address",
-                        "name": "endorsor",
-                        "type": "address"
+                        'internalType': 'address',
+                        'name': 'endorsor',
+                        'type': 'address'
                     },
                     {
-                        "internalType": "bytes32",
-                        "name": "identity",
-                        "type": "bytes32"
+                        'internalType': 'bytes32',
+                        'name': 'identity',
+                        'type': 'bytes32'
                     },
                     {
-                        "internalType": "bool",
-                        "name": "active",
-                        "type": "bool"
+                        'internalType': 'bool',
+                        'name': 'active',
+                        'type': 'bool'
                     }
                 ],
-                "internalType": "struct AuthorityUtils.Candidate[]",
-                "name": "nodes",
-                "indexed": false,
-                "type": "tuple[]"
+                'internalType': 'struct AuthorityUtils.Candidate[]',
+                'name': 'nodes',
+                'indexed': false,
+                'type': 'tuple[]'
             }
         ],
-        "name": "Added",
-        "type": "event"
+        'name': 'Added',
+        'type': 'event'
     })
 
 
@@ -204,11 +204,11 @@ describe('abi', () => {
         expect(abi.encodeParameter('uint256', '2345675643')).equal('0x000000000000000000000000000000000000000000000000000000008bd02b7b')
         expect(abi.encodeParameter('bytes32[]', ['0xdf32340000000000000000000000000000000000000000000000000000000000', '0xfdfd000000000000000000000000000000000000000000000000000000000000'])).equal('0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002df32340000000000000000000000000000000000000000000000000000000000fdfd000000000000000000000000000000000000000000000000000000000000')
 
-        expect(abi.decodeParameter('uint256', '0x0000000000000000000000000000000000000000000000000000000000000010')).equal("16")
+        expect(abi.decodeParameter('uint256', '0x0000000000000000000000000000000000000000000000000000000000000010')).equal('16')
         expect(abi.decodeParameter('string', '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000848656c6c6f212521000000000000000000000000000000000000000000000000'))
-            .equal("Hello!%!")
+            .equal('Hello!%!')
         expect(abi.decodeParameter('string', '0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000848656c6c6f212521000000000000000000000000000000000000000000000000'))
-            .equal("Hello!%!")
+            .equal('Hello!%!')
 
     })
 
@@ -236,23 +236,23 @@ describe('abi', () => {
         expect(() => {
             // @ts-ignore
             new abi.Function({
-                "constant": false,
+                'constant': false,
                 // @ts-ignore
-                "inputs": "WRONG_FORMAT",
-                "name": "f1",
-                "outputs": [
+                'inputs': 'WRONG_FORMAT',
+                'name': 'f1',
+                'outputs': [
                     {
-                        "name": "r1",
-                        "type": "address"
+                        'name': 'r1',
+                        'type': 'address'
                     },
                     {
-                        "name": "r2",
-                        "type": "bytes"
+                        'name': 'r2',
+                        'type': 'bytes'
                     }
                 ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
+                'payable': false,
+                'stateMutability': 'nonpayable',
+                'type': 'function'
             })
         }).to.throw()
     })
@@ -266,19 +266,19 @@ describe('abi', () => {
                 '0x0000000000000000000000000000000000000000000000000000000000000001'
             ]))
             .deep.equal({
-                "0": "1",
-                "1": "foo",
-                "a1": "1",
-                "a2": "foo",
+                '0': '1',
+                '1': 'foo',
+                'a1': '1',
+                'a2': 'foo',
             })
 
         expect(e2.decode('0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000003666f6f0000000000000000000000000000000000000000000000000000000000',
             ['0x0000000000000000000000000000000000000000000000000000000000000001']))
             .deep.equal({
-                "0": "1",
-                "1": "foo",
-                "a1": "1",
-                "a2": "foo",
+                '0': '1',
+                '1': 'foo',
+                'a1': '1',
+                'a2': 'foo',
             })
 
 
@@ -314,8 +314,8 @@ describe('abi', () => {
             ['0xe96585649d926cc4f5031a6113d7494d766198c0ac68b04eb93207460f9d7fd2',
                 '0x0000000000000000000000000000000000000000000000000000000000000001']))
             .deep.equal({
-                "0": "1",
-                "a1": "1",
+                '0': '1',
+                'a1': '1',
             })
 
         const preimage = 'hello'
@@ -330,7 +330,7 @@ describe('abi', () => {
         expect(e5.encode({ a1: hexSlice })).deep.equal([e5.signature, hash])
 
         // Wrong encoding of event hex format
-        expect(() => e5.encode({ a1: "WRONG_HEX_FORMAT" })).to.throw(Error, "event.encode: invalid bytes value")
+        expect(() => e5.encode({ a1: 'WRONG_HEX_FORMAT' })).to.throw(Error, 'event.encode: invalid bytes value')
     })
 
     it('v2: Function', () => {
