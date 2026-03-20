@@ -86,9 +86,9 @@ describe('secp256k1', () => {
 describe('secp256k1 low S enforcement test', () => {
     it('test signature low S', () => {
         // secp256k1 curve order N
-        const SECP256K1_N = BigInt(new EC('secp256k1').n!.toString());
+        const SECP256K1_N = BigInt(new EC('secp256k1').n!.toString())
         // N/2 - the threshold for low-S
-        const SECP256K1_HALF_N = SECP256K1_N / BigInt(2);
+        const SECP256K1_HALF_N = SECP256K1_N / BigInt(2)
         /**
          * Check if a signature has low-S value
          * @param signature - The 65-byte signature (r: 32 bytes, s: 32 bytes, v: 1 byte)
@@ -96,12 +96,12 @@ describe('secp256k1 low S enforcement test', () => {
          */
         function isLowS(signature: Buffer): boolean {
           if (signature.length < 64) {
-            throw new Error("Invalid signature length");
+            throw new Error('Invalid signature length')
           }
           // S is bytes 32-64
-          const sBytes = signature.slice(32, 64);
-          const s = BigInt("0x" + sBytes.toString("hex"));
-          return s <= SECP256K1_HALF_N;
+          const sBytes = signature.slice(32, 64)
+          const s = BigInt('0x' + sBytes.toString('hex'))
+          return s <= SECP256K1_HALF_N
         }
         
         // 100 rounds of random signature generation and validation
@@ -225,7 +225,7 @@ describe('mnemonic', () => {
     })
 
     it('hdNode custom path', () => {
-        const eth_path = `m/44'/60'/0'/0`
+        const eth_path = 'm/44\'/60\'/0\'/0'
         const node = HDNode.fromMnemonic(words, eth_path)
         // test case generated via https://iancoleman.io/bip39/
         const addresses = [

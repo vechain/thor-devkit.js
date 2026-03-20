@@ -192,8 +192,8 @@ export namespace abi {
                     } else {
                         if (input.type === 'string') {
                             topic = '0x' + keccak256(value).toString('hex')
-                            // tslint:disable-next-line:max-line-length
-                        } else if (typeof value === 'string' && /^0x[0-9a-f]+$/i.test(value) && value.length % 2 === 0) {
+                        } else if (typeof value === 'string' &&
+                            /^0x[0-9a-f]+$/i.test(value) && value.length % 2 === 0) {
                             // value is encoded
                             topic = '0x' + keccak256(Buffer.from(value.slice(2), 'hex')).toString('hex')
                         } else {

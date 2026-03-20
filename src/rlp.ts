@@ -95,7 +95,7 @@ export namespace RLP {
             assert(this.maxBytes ? buf.length <= this.maxBytes : true, ctx,
                 `expected less than ${this.maxBytes} bytes`)
             assert(buf.length === 0 || buf[0] !== 0, ctx,
-                `expected canonical integer (no leading zero bytes)`)
+                'expected canonical integer (no leading zero bytes)')
 
             return {
                 decode() {
@@ -195,7 +195,7 @@ export namespace RLP {
                 `expected less than ${this.bytes} bytes`)
 
             assert(buf.length === 0 || buf[0] !== 0, ctx,
-                `expected no leading zero bytes`)
+                'expected no leading zero bytes')
 
             const bytes = this.bytes
             return {

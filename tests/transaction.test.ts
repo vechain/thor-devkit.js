@@ -6,7 +6,7 @@ import { Transaction, blake2b256, secp256k1, address } from '../src'
 // tslint:disable:max-line-length
 // tslint:disable:trailing-comma
 
-describe("transaction", () => {
+describe('transaction', () => {
     // Correct transaction body
     const correctTransactionBody: Transaction.LegacyBody = {
         type: Transaction.Type.Legacy,
@@ -101,14 +101,14 @@ describe("transaction", () => {
     signed.signature = secp256k1.sign(blake2b256(signed.encode()), privKey)
     const signer = address.fromPublicKey(secp256k1.derivePublicKey(privKey))
 
-    it("signed", () => {
+    it('signed', () => {
         expect(signed.signature!.toString('hex')).equal('f76f3c91a834165872aa9464fc55b03a13f46ea8d3b858e528fcceaf371ad6884193c3f313ff8effbb57fe4d1adc13dceb933bedbf9dbb528d2936203d5511df00')
         expect(signed.origin).equal(signer)
         expect(signed.id).equal('0xda90eaea52980bc4bb8d40cb2ff84d78433b3b4a6e7d50b75736c5e3e77b71ec')
         expect(signed.signingHash(signer).toString('hex')).equal('da90eaea52980bc4bb8d40cb2ff84d78433b3b4a6e7d50b75736c5e3e77b71ec')
     })
 
-    it("encode decode", () => {
+    it('encode decode', () => {
         expect(signed.encode().toString('hex')).equal(signedEncoded.toString('hex'))
         expect(Transaction.decode(signedEncoded)).deep.equal(signed)
 
@@ -117,7 +117,7 @@ describe("transaction", () => {
 
         // Encode invalid reserved field
         const encodedIncorrectlyDelegated = incorrectlyDelegated.encode().toString('hex')
-        Transaction.decode(Buffer.from(encodedIncorrectlyDelegated, "hex"), true)
+        Transaction.decode(Buffer.from(encodedIncorrectlyDelegated, 'hex'), true)
     })
 
     const incorrectlySigned = new Transaction(correctTransactionBody)
@@ -139,7 +139,7 @@ describe("transaction", () => {
 
         const hash = delegated.signingHash()
         const dhash = delegated.signingHash(addr1)
-        expect(() => delegated.signingHash("INVALID_ADDRESS")).to.throw(Error, 'delegateFor expected address')
+        expect(() => delegated.signingHash('INVALID_ADDRESS')).to.throw(Error, 'delegateFor expected address')
 
         const sig = Buffer.concat([
             secp256k1.sign(hash, priv1),
@@ -157,13 +157,13 @@ describe("transaction", () => {
             ...correctTransactionBody,
             type: 1 as any
         })
-        expect(()=> tx.signingHash()).to.throw("unsupported transaction type: 1")
+        expect(()=> tx.signingHash()).to.throw('unsupported transaction type: 1')
     })
 
     it('decode invalid tx', () => {
-        expect(() => Transaction.decode(Buffer.from([]))).to.throw("typed transaction too short")
-        expect(() => Transaction.decode(Buffer.from([0x00]))).to.throw("transaction type not supported: 0")
-        expect(() => Transaction.decode(Buffer.from([0x01]))).to.throw("transaction type not supported: 1")
+        expect(() => Transaction.decode(Buffer.from([]))).to.throw('typed transaction too short')
+        expect(() => Transaction.decode(Buffer.from([0x00]))).to.throw('transaction type not supported: 0')
+        expect(() => Transaction.decode(Buffer.from([0x01]))).to.throw('transaction type not supported: 1')
     })
  
     it('legacy without type', () => { 

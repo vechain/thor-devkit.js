@@ -407,8 +407,10 @@ const unsignedDynamicFeeTxRLP = new RLP({
 
 const dynamicFeeTxRLP = new RLP({
     name: 'dynamic fee tx',
-    // tslint:disable-next-line:max-line-length
-    kind: [...(unsignedDynamicFeeTxRLP.profile.kind as RLP.Profile[]), { name: 'signature', kind: new RLP.BufferKind() }],
+    kind: [
+        ...(unsignedDynamicFeeTxRLP.profile.kind as RLP.Profile[]),
+        { name: 'signature', kind: new RLP.BufferKind() },
+    ],
 })
 
 const featuresKind = new RLP.NumericKind(4)

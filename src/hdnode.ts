@@ -5,7 +5,7 @@ import { address } from './address'
 import { Buffer } from 'buffer'
 
 // see https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-const VET_DERIVATION_PATH = `m/44'/818'/0'/0`
+const VET_DERIVATION_PATH = 'm/44\'/818\'/0\'/0'
 const xpubPrefix = Buffer.from('0488b21e000000000000000000', 'hex')
 const xprivPrefix = Buffer.from('0488ade4000000000000000000', 'hex')
 const curve = new EC('secp256k1')
